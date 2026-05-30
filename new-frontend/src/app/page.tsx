@@ -54,7 +54,6 @@ const curatedSelection = [
 export default function HomePage() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -116,20 +115,7 @@ export default function HomePage() {
     };
   }, []);
 
-  useEffect(() => {
-    const onScroll = () => {
-      const trigger = window.innerHeight * 0.5; // after half hero
-      setIsScrolled(window.scrollY > trigger);
-    };
 
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
-    };
-  }, []);
 
   return (
     <main className="overflow-x-hidden text-matte-black font-bold">
@@ -325,7 +311,7 @@ export default function HomePage() {
             <div className="absolute -bottom-10 -right-10 hidden md:block w-64 aspect-square border-8 border-paper-white bg-surface-container-highest overflow-hidden shadow-xl">
               <img
                 className="w-full h-full object-cover"
-                alt="A detailed close-up shot of a white-glove professional carefully hanging a large framed artwork in a minimalist gallery-style home. The focus is on the precision and care of the installation process, reinforcing the brand's commitment to premium service and luxury."
+                alt="A detailed close-up shot of a white-glove professional carefully hanging a large framed artwork in a minimalist gallery-style home. The focus is on the precision and care of the installation process, reinforcing the brand&apos;s commitment to premium service and luxury."
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9hgPKm3x2DG62NPUAcYKLIHPkK6WSbVlR0DFSeLOnHIBKMPZuxOHRMlC5KJStxLq9Q27AerCIrcUEnAuMGXEqXBX7UiAPVHAmYFo4fgl4sTu5DGqtc1YwOQswHQDHID5tqG4wFmdzvkfC4fXdyicI46HcOUTD-hOWjp6kXjoPqKpwrOZbkulXL4Wbrv4QxURF81MIVXtGwS1n1rQEV6YDVxnJrJ_NjbpN5AhJfdKRSvRJQu9LqAYvO4FQ5Cg6N5QwSA67u40tFNs"
               />
             </div>
@@ -334,7 +320,7 @@ export default function HomePage() {
             <div>
               <h2 className="font-headline-lg text-headline-lg mb-6">Designed for the Discerning Collector</h2>
               <p className="font-body-lg text-on-surface-variant leading-relaxed">
-                We believe that art should be as fluid as the lives we lead. Kala Vault provides access to the world's most significant contemporary artists through a model that favors experience over ownership.
+                We believe that art should be as fluid as the lives we lead. Kala Vault provides access to the world&apos;s most significant contemporary artists through a model that favors experience over ownership.
               </p>
             </div>
             <div className="pt-8 border-t border-outline/10">

@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export function Footer() {
   return (
     <footer className="bg-[#f9f4eb] border-t border-black/5 text-matte-black">
@@ -29,10 +31,10 @@ export function Footer() {
           <div className="space-y-4">
             <p className="text-xs uppercase tracking-[0.35em] text-on-surface-variant">Navigation</p>
             <nav className="space-y-3 text-sm text-matte-black/70">
-              <a href="/" className="block hover:text-matte-black">Home</a>
-              <a href="/gallery" className="block hover:text-matte-black">Collections</a>
-              <a href="/vault" className="block hover:text-matte-black">Subscriptions</a>
-              <a href="/services" className="block hover:text-matte-black">Services</a>
+              <Link href="/" className="block hover:text-matte-black">Home</Link>
+              <Link href="/gallery" className="block hover:text-matte-black">Collections</Link>
+              <Link href="/vault" className="block hover:text-matte-black">Subscriptions</Link>
+              <Link href="/services" className="block hover:text-matte-black">Services</Link>
             </nav>
           </div>
 

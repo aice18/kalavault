@@ -5,11 +5,12 @@ import { Button } from '@/components/Button';
 import { artworkDetails, featuredArtworks } from '@/lib/data';
 
 type ArtworkPageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
-export default function ArtworkPage({ params }: ArtworkPageProps) {
-  const artwork = artworkDetails.find((item) => item.slug === params.slug);
+export default async function ArtworkPage({ params }: ArtworkPageProps) {
+  const { slug } = await params;
+  const artwork = artworkDetails.find((item) => item.slug === slug);
 
   if (!artwork) {
     return (
