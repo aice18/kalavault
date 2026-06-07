@@ -574,4 +574,46 @@ export default function LandingPage() {
                   <div className="w-12 h-px bg-white/20" />
                   <span className="font-quote italic text-sm text-paper-white/40">
                     0{TESTIMONIALS_DATA.length}
-     
+                  </span>
+                </div>
+
+                {/* Line Indicators */}
+                <div className="flex gap-2">
+                  {TESTIMONIALS_DATA.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setTestimonialSlide(index)}
+                      className={`h-[2px] transition-all duration-500 cursor-pointer ${testimonialSlide === index ? 'w-10 bg-gallery-gold' : 'w-4 bg-white/25 hover:bg-white/50'}`}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+
+                {/* Text navigation triggers */}
+                <div className="flex items-center gap-8 font-label-caps text-[11px] tracking-[0.2em]">
+                  <button
+                    onClick={prevTestimonial}
+                    className="text-paper-white/60 hover:text-gallery-gold transition-colors duration-300 cursor-pointer uppercase flex items-center gap-2 group"
+                  >
+                    <span className="material-symbols-outlined text-xs group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                    [ PREV ]
+                  </button>
+                  <button
+                    onClick={nextTestimonial}
+                    className="text-paper-white/60 hover:text-gallery-gold transition-colors duration-300 cursor-pointer uppercase flex items-center gap-2 group"
+                  >
+                    [ NEXT ]
+                    <span className="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      { /* Footer */}
+      <Footer />
+    </div>
+  );
+}
