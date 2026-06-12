@@ -151,12 +151,8 @@ export function classifyArtworks(
   });
 }
 
-/**
- * Format price for display
- */
-export function formatPrice(cents: number): string {
-  const dollars = cents / 100;
-  return `$${dollars.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+export function formatPrice(value: number): string {
+  return `₹${value.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 /**
@@ -164,5 +160,5 @@ export function formatPrice(cents: number): string {
  */
 export function formatRentalPrice(amount: number, period: 'monthly' | 'yearly' = 'monthly'): string {
   const suffix = period === 'monthly' ? '/mo' : '/yr';
-  return `$${Math.round(amount).toLocaleString('en-US')} ${suffix}`;
+  return `₹${Math.round(amount).toLocaleString('en-IN')} ${suffix}`;
 }

@@ -1,194 +1,483 @@
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { useEffect } from 'react';
+import { motion, useInView, AnimatePresence } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
 import TopNavBar from '../components/TopNavBar';
 import Footer from '../components/Footer';
+import { LATEST_ACQUISITIONS } from '../data';
+
+// ─── Animated counter ─────────────────────────────────────────────────────────
+function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  useEffect(() => {
+    if (!inView) return;
+    let start = 0;
+    const duration = 2200;
+    const step = 16;
+    const increment = target / (duration / step);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= target) { setCount(target); clearInterval(timer); }
+      else setCount(Math.floor(start));
+    }, step);
+    return () => clearInterval(timer);
+  }, [inView, target]);
+  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>;
+}
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 52 },
+  visible: { opacity: 1, y: 0, transition: { duration: 1, ease: [0.16, 1, 0.3, 1] } },
+};
+
+const STATS = [
+  { value: 30, suffix: '+', label: 'Original Artworks' },
+  { value: 50, suffix: '+', label: 'Installations' },
+  { value: 100, suffix: '%', label: 'Client Satisfaction' },
+];
+
+const PILLARS = [
+  {
+    icon: 'person_search',
+    title: 'Access to Knowledgeable Curators',
+    desc: 'See curator-approved artworks in special collections released weekly, or work one-on-one with an art advisor to get personalised recommendations built around your brief.',
+    accent: '#D4AF37',
+    img: 'https://images.unsplash.com/photo-1578301978162-7aae4d755744?auto=format&fit=crop&q=80&w=900',
+  },
+  {
+    icon: 'verified_user',
+    title: 'Peace of Mind',
+    desc: 'From curation and installation to maintenance and artwork rotation, we manage the entire process — so you enjoy a professionally curated programme without the operational burden.',
+    accent: '#A8C5A0',
+    img: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=900',
+  },
+  {
+    icon: 'star',
+    title: 'Five-Star Service',
+    desc: 'We pride ourselves on delivering world-class customer service to every client — corporations, hotels, developers, cafés, and commercial spaces alike.',
+    accent: '#9BB8D4',
+    img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=900',
+  },
+];
+
+// Duplicate artworks enough times for a seamless infinite loop
+const CAROUSEL_ITEMS = [...LATEST_ACQUISITIONS, ...LATEST_ACQUISITIONS, ...LATEST_ACQUISITIONS, ...LATEST_ACQUISITIONS];
+
+// ─── Continuous Artwork Carousel ──────────────────────────────────────────────
+function ArtworkCarousel() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const CARD_WIDTH = 380; // px — card width
+  const GAP = 20;         // px — gap between cards
+  const UNIT = CARD_WIDTH + GAP;
+  const BASE_COUNT = LATEST_ACQUISITIONS.length;
+  const SPEED = 0.6; // px per frame
+
+  // We animate via requestAnimationFrame for a perfectly smooth CSS-free scroll
+  const posRef = useRef(0);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    function animate() {
+      posRef.current += SPEED;
+      // Reset seamlessly when we've scrolled exactly one full set width
+      const loopWidth = BASE_COUNT * UNIT;
+      if (posRef.current >= loopWidth) {
+        posRef.current -= loopWidth;
+      }
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translateX(-${posRef.current}px)`;
+      }
+      rafRef.current = requestAnimationFrame(animate);
+    }
+    rafRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [BASE_COUNT, UNIT]);
+
+  return (
+    <div className="relative overflow-hidden select-none" style={{ cursor: 'default' }}>
+      {/* Left fade */}
+      <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+        style={{ background: 'linear-gradient(to right, #f5f3f0, transparent)' }} />
+      {/* Right fade */}
+      <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
+        style={{ background: 'linear-gradient(to left, #f5f3f0, transparent)' }} />
+
+      <div
+        ref={trackRef}
+        className="flex will-change-transform"
+        style={{ gap: `${GAP}px`, paddingLeft: '20px', paddingRight: '20px' }}
+      >
+        {CAROUSEL_ITEMS.map((art, i) => (
+          <div
+            key={`${art.id}-${i}`}
+            className="group relative flex-shrink-0 overflow-hidden cursor-pointer"
+            style={{ width: `${CARD_WIDTH}px` }}
+            onClick={() => (window.location.href = `/artwork/${art.id}`)}
+          >
+            {/* Image */}
+            <div className="relative overflow-hidden" style={{ height: '440px' }}>
+              <img
+                src={art.image}
+                alt={art.title}
+                className="w-full h-full object-cover transition-transform duration-[1.8s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-108"
+                draggable={false}
+              />
+              {/* Watermark tiled */}
+              <div className="watermark-tiled transition-opacity duration-500 group-hover:opacity-0" />
+              {/* Hover overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-600" />
+              {/* Hover info */}
+              <div className="absolute bottom-6 left-6 right-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                <h3 className="font-headline-md text-xl text-paper-white mb-1 leading-tight">{art.title}</h3>
+                <p className="font-label-caps text-[10px] text-gallery-gold uppercase tracking-[0.25em]">{art.artist}</p>
+                <div className="flex justify-between items-center mt-3 pt-3 border-t border-paper-white/20">
+                  <span className="font-body-sm text-[12px] text-paper-white/80">{art.medium}</span>
+                  <span className="font-label-caps text-[10px] text-paper-white/60">{art.dimensions}</span>
+                </div>
+              </div>
+            </div>
+            {/* Below card info */}
+            <div className="pt-4 pb-2">
+              <p className="font-label-caps text-[9px] text-gallery-gold uppercase tracking-[0.25em] mb-1">{art.artist}</p>
+              <p className="font-headline-md text-[16px] text-primary leading-snug">{art.title}</p>
+              <p className="font-body-sm text-[12px] text-on-surface-variant mt-1">{art.medium}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Manifesto() {
+  const [activePillar, setActivePillar] = useState(0);
+  const pillar = PILLARS[activePillar];
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const t = setInterval(() => setActivePillar(p => (p + 1) % PILLARS.length), 5500);
+    return () => clearInterval(t);
   }, []);
 
   return (
-    <div className="bg-paper-white text-primary font-body-lg overflow-x-hidden min-h-screen selection:bg-gallery-gold/30">
+    <div className="bg-paper-white text-primary font-body-md overflow-x-hidden min-h-screen selection:bg-gallery-gold/30">
       <TopNavBar />
 
-      <main className="pt-[80px]">
-        {/* Hero Section */}
-        <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden px-8 md:px-margin-desktop">
-          <div className="absolute inset-0 z-0">
-            <motion.img 
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 2, ease: "easeOut" }}
-              className="w-full h-full object-cover" 
-              alt="A grand, ultra-modern art gallery space" 
-              src="https://images.unsplash.com/photo-1577720580479-7d839d829c73?auto=format&fit=crop&q=80&w=2500"
-            />
-            {/* Using a lighter gradient so dark text reads well */}
-            <div className="absolute inset-0 bg-paper-white/80 backdrop-blur-sm"></div>
+      <main className="pt-[64px]">
+
+        {/* ═══════════════════════════════════════════════════════════
+            WHAT IS TKV — mission hero (no full-screen image)
+        ═══════════════════════════════════════════════════════════ */}
+        <section id="mission" className="pt-20 pb-0 bg-paper-white overflow-hidden">
+          <div className="max-w-7xl mx-auto px-8 md:px-16">
+
+            {/* Top label row */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center gap-4 mb-12"
+            >
+              <div className="h-px w-10 bg-gallery-gold" />
+              <span className="font-label-caps text-[10px] text-gallery-gold uppercase tracking-[0.4em]">Our Mission</span>
+            </motion.div>
+
+            {/* Large editorial layout: headline left, body right */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-stretch mb-20">
+              {/* Left — mega headline */}
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="lg:col-span-6 flex flex-col justify-center"
+              >
+                <h1 className="font-display-lg text-6xl md:text-7xl lg:text-[80px] text-primary leading-[1.0] tracking-tight">
+                  What Is<br />
+                  <span className="text-gallery-gold font-normal">The Kala</span><br />
+                  <span className="font-light italic text-primary">Vault?</span>
+                </h1>
+              </motion.div>
+
+              {/* Right — body + quote + buttons, divided by full height vertical line */}
+              <motion.div
+                initial={{ opacity: 0, y: 32 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="lg:col-span-6 border-l border-outline/10 pl-8 md:pl-12 flex flex-col justify-between py-2 space-y-8"
+              >
+                <p className="font-body-md text-[16px] text-on-surface-variant leading-[1.7]">
+                  The Kala Vault provides curated artwork solutions for businesses through flexible rental, subscription, and acquisition programmes. We help corporations, hotels, developers, cafés, and commercial spaces discover and display original artworks that elevate their environments and create lasting impressions.
+                </p>
+                <div className="text-left">
+                  <p className="font-display-sm italic text-xl md:text-2xl text-gallery-gold leading-relaxed">
+                    "The process of art discovery has evolved to be more accessible, logical, and aesthetically pleasant than ever before."
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Link
+                    to="/subscriptions"
+                    className="group inline-flex items-center justify-between bg-primary text-paper-white font-label-caps text-[11px] uppercase tracking-[0.2em] px-8 py-4 hover:bg-gallery-gold transition-all duration-500 font-bold min-w-[200px]"
+                  >
+                    <span>Explore Programmes</span>
+                    <span className="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                  </Link>
+                  <Link
+                    to="/inquire"
+                    className="inline-flex items-center justify-center border border-outline-variant text-primary bg-white font-label-caps text-[11px] uppercase tracking-[0.2em] px-8 py-4 hover:border-gallery-gold hover:text-gallery-gold transition-all duration-400 font-bold min-w-[200px]"
+                  >
+                    Consult a Curator
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+
+
           </div>
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="relative z-10 max-w-4xl text-center text-primary"
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════
+            STATS BAND
+        ═══════════════════════════════════════════════════════════ */}
+        <section className="bg-paper-white border-b border-t border-outline/10 mt-0">
+          <div className="max-w-6xl mx-auto px-8 md:px-16 py-14 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-outline/10">
+            {STATS.map((s, i) => (
+              <div key={i} className="flex flex-col items-center justify-center py-10 md:py-8 text-center px-6 group cursor-default">
+                <span className="font-display-lg text-4xl md:text-5xl text-primary leading-none mb-2 group-hover:text-gallery-gold transition-colors duration-500">
+                  <AnimatedCounter target={s.value} suffix={s.suffix} />
+                </span>
+                <span className="font-label-caps text-[10px] text-gallery-gold/80 uppercase tracking-[0.28em]">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════
+            ARTWORK CAROUSEL — continuous 3-up auto-scroll
+        ═══════════════════════════════════════════════════════════ */}
+        <section id="discover" className="py-24 md:py-32 bg-subtle-smoke overflow-hidden">
+          <div className="max-w-7xl mx-auto px-8 md:px-16 mb-14">
+            <motion.div
+              variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}
+              className="flex flex-col md:flex-row md:items-end justify-between gap-6"
+            >
+              <div>
+                <p className="font-label-caps text-[10px] text-gallery-gold tracking-[0.35em] uppercase mb-5">Signature Art Collections</p>
+                <h2 className="font-display-lg text-5xl md:text-6xl text-primary leading-[1.02] tracking-tight">
+                  Our Artworks
+                </h2>
+              </div>
+              <Link
+                to="/collections"
+                className="group inline-flex items-center gap-3 font-label-caps text-[11px] uppercase tracking-[0.28em] border-b border-primary/20 pb-1 hover:border-gallery-gold hover:text-gallery-gold transition-all duration-300 whitespace-nowrap self-end"
+              >
+                View Full Collection
+                <span className="material-symbols-outlined text-[15px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* The continuous carousel — full width, no side padding */}
+          <ArtworkCarousel />
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════
+            WHY TKV — interactive pillar panel
+        ═══════════════════════════════════════════════════════════ */}
+        <section className="py-24 md:py-36 bg-paper-white overflow-hidden">
+          <div className="max-w-7xl mx-auto px-8 md:px-16">
+            <motion.div
+              variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-80px' }}
+              className="mb-14"
+            >
+              <div className="flex items-center gap-4 mb-5">
+                <div className="h-px w-8 bg-gallery-gold/50" />
+                <p className="font-label-caps text-[10px] text-gallery-gold tracking-[0.35em] uppercase">Why TKV</p>
+              </div>
+              <h2 className="font-display-lg text-5xl md:text-6xl text-primary leading-[1.02] tracking-tight max-w-xl">
+                How We're Different
+              </h2>
+            </motion.div>
+
+            <motion.div
+              variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}
+              className="grid grid-cols-1 lg:grid-cols-2 overflow-hidden border border-outline/10"
+            >
+              {/* Left: tabs */}
+              <div className="flex flex-col divide-y divide-outline/10">
+                {PILLARS.map((p, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActivePillar(i)}
+                    className={`group text-left p-8 md:p-10 transition-all duration-400 relative overflow-hidden ${activePillar === i ? 'bg-primary' : 'bg-paper-white hover:bg-subtle-smoke'
+                      }`}
+                  >
+                    <div
+                      className="absolute left-0 top-0 bottom-0 w-[3px] transition-all duration-400"
+                      style={{ background: activePillar === i ? p.accent : 'transparent' }}
+                    />
+                    <div className="flex items-start gap-5">
+                      <span
+                        className="material-symbols-outlined text-[22px] mt-0.5 flex-shrink-0 transition-colors duration-400"
+                        style={{ color: activePillar === i ? p.accent : 'rgba(0,0,0,0.2)' }}
+                      >
+                        {p.icon}
+                      </span>
+                      <div>
+                        <h3 className={`font-headline-md text-[17px] mb-2 leading-snug transition-colors duration-400 ${activePillar === i ? 'text-paper-white' : 'text-primary'}`}>
+                          {p.title}
+                        </h3>
+                        <p className={`font-body-md text-[13px] leading-relaxed transition-colors duration-400 ${activePillar === i ? 'text-paper-white/60' : 'text-on-surface-variant'}`}>
+                          {p.desc}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Right: image */}
+              <div className="relative overflow-hidden h-[360px] lg:h-auto min-h-[360px]">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={activePillar}
+                    src={pillar.img}
+                    alt={pillar.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    initial={{ opacity: 0, scale: 1.06 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                </AnimatePresence>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activePillar + '-lbl'}
+                    className="absolute bottom-7 left-7"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.45 }}
+                  >
+                    <span className="font-label-caps text-[9px] uppercase tracking-[0.3em]" style={{ color: pillar.accent }}>
+                      {pillar.title}
+                    </span>
+                  </motion.div>
+                </AnimatePresence>
+                <div className="absolute top-6 right-6 flex gap-1.5">
+                  {PILLARS.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setActivePillar(i)}
+                      className="rounded-full transition-all duration-400"
+                      style={{
+                        width: activePillar === i ? '22px' : '6px',
+                        height: '6px',
+                        background: activePillar === i ? pillar.accent : 'rgba(255,255,255,0.3)',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════
+            TRUSTPILOT QUOTE — dark full-bleed
+        ═══════════════════════════════════════════════════════════ */}
+        <section className="relative overflow-hidden" style={{ background: '#0c0c0c' }}>
+          <div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none"
+            style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.07) 0%, transparent 65%)' }}
+          />
+          <div className="relative z-10 py-32 md:py-44 px-8 md:px-16 max-w-5xl mx-auto text-center">
+            <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
+              <div className="flex justify-center gap-1.5 mb-8">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <svg key={i} viewBox="0 0 20 20" fill="#D4AF37" className="w-5 h-5">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="font-label-caps text-[9px] text-gallery-gold uppercase tracking-[0.45em] mb-10">Trustpilot · Verified Review</p>
+              <blockquote className="font-headline-md italic text-2xl md:text-3xl lg:text-[38px] text-paper-white/85 leading-[1.55] font-light max-w-4xl mx-auto mb-10">
+                "Partnering with Kala Vault is like having an experienced curator by your side. We help businesses discover, rotate, and showcase artworks that elevate every space."
+              </blockquote>
+              <div className="h-px w-10 bg-gallery-gold/30 mx-auto mb-6" />
+              <p className="font-label-caps text-[9px] text-paper-white/25 uppercase tracking-[0.35em]">Corporate Client — Verified Partnership</p>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════
+            PHILOSOPHY STRIP
+        ═══════════════════════════════════════════════════════════ */}
+        <section className="bg-subtle-smoke border-y border-outline/10">
+          <motion.div
+            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}
+            className="max-w-7xl mx-auto px-8 md:px-16 grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-outline/10"
           >
-            <p className="font-label-caps text-[12px] text-gallery-gold mb-6 tracking-[0.4em] uppercase font-bold text-shadow-sm">The Kala Vault Manifesto</p>
-            <h1 className="font-display-lg text-5xl md:text-7xl mb-8 leading-tight tracking-tight">Art is Currency.<br/>Space is Power.</h1>
-            <p className="font-headline-md italic text-primary/80 text-2xl md:text-3xl max-w-3xl mx-auto font-light">We reject the sterile, the stagnant, and the uninspired. A workspace is not merely a container; it is a declaration of influence.</p>
+            {[
+              { label: 'Philosophy', text: 'Art is not decoration — it is the silent voice of your brand.' },
+              { label: 'Approach', text: 'Every curation begins with the space, the people, and the story they wish to tell.' },
+              { label: 'Promise', text: 'We remain your curatorial partner long after the first installation.' },
+            ].map((item, i) => (
+              <div key={i} className="p-10 md:p-14 group hover:bg-paper-white/70 transition-colors duration-400 cursor-default">
+                <p className="font-label-caps text-[9px] text-gallery-gold uppercase tracking-[0.35em] mb-5">{item.label}</p>
+                <p className="font-headline-md italic text-[17px] text-primary leading-[1.65]">{item.text}</p>
+              </div>
+            ))}
           </motion.div>
         </section>
 
-        {/* Our Heritage */}
-        <section className="py-24 md:py-32 px-8 md:px-margin-desktop max-w-[1800px] mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24">
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="lg:col-span-5 flex flex-col justify-center"
-            >
-              <h2 className="font-display-lg text-4xl md:text-5xl mb-8 text-primary">Brand Philosophy</h2>
-              <div className="space-y-6 text-on-surface-variant leading-relaxed font-body-md text-lg">
-                <p>Derived from "Luminous," our brand philosophy centers on bringing clarity, prestige, and inspiration to corporate environments through museum-quality art curation.</p>
-                <p>We transform sterile workspaces into dynamic galleries that reflect your brand's sophistication and commitment to excellence.</p>
-              </div>
-            </motion.div>
-            <div className="lg:col-span-1 hidden lg:block"></div>
-            <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="lg:col-span-6 relative"
-            >
-              <div className="overflow-hidden">
-                  <img className="w-full h-[500px] md:h-[600px] object-cover grayscale brightness-95 hover:scale-105 transition-transform duration-[2s]" alt="Curator Desk" src="https://images.unsplash.com/photo-1549490349-8643362247b5?auto=format&fit=crop&q=80&w=1500"/>
-              </div>
-              <div className="absolute -bottom-8 -left-8 bg-paper-white p-8 border border-outline/10 shadow-xl hidden md:block max-w-[350px] z-20">
-                <p className="font-label-caps text-[10px] text-gallery-gold mb-3 uppercase tracking-widest">DEGAS ON VISION</p>
-                <p className="text-[16px] italic font-headline-md">"Art is not what you see, but what you make others see."</p>
-              </div>
-            </motion.div>
+        {/* ═══════════════════════════════════════════════════════════
+            FINAL CTA — dark photo-backed
+        ═══════════════════════════════════════════════════════════ */}
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&q=80&w=2400"
+              alt="Premium gallery space"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0" style={{ background: 'rgba(18,14,10,0.88)' }} />
           </div>
-        </section>
-
-        {/* Curation Process */}
-        <section className="py-24 md:py-32 bg-subtle-smoke overflow-hidden">
-          <div className="px-8 md:px-margin-desktop max-w-[1800px] mx-auto">
-            <div className="text-center mb-20">
-              <p className="font-label-caps text-[11px] text-gallery-gold tracking-[0.3em] uppercase mb-4">VALUE PROPOSITION</p>
-              <h2 className="font-display-lg text-4xl md:text-5xl text-primary">The Core Value Proposition</h2>
+          <motion.div
+            variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}
+            className="relative z-10 py-36 md:py-52 px-8 md:px-16 max-w-4xl mx-auto text-center flex flex-col items-center"
+          >
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-px w-8 bg-gallery-gold/40" />
+              <p className="font-label-caps text-[10px] text-gallery-gold tracking-[0.4em] uppercase">Begin Your Journey</p>
+              <div className="h-px w-8 bg-gallery-gold/40" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
-              {[
-                {
-                  step: "01",
-                  title: "Aesthetic Flexibility",
-                  desc: "Transform sterile workspaces into dynamic galleries that reflect brand sophistication and foster creativity.",
-                  img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1000"
-                },
-                {
-                  step: "02",
-                  title: "Capital Preservation",
-                  desc: "Access high-value artwork without substantial upfront capital required for permanent acquisition.",
-                  img: "https://images.unsplash.com/photo-1561214115-f1f11544a7b0?auto=format&fit=crop&q=80&w=1000"
-                },
-                {
-                  step: "03",
-                  title: "Curation Excellence",
-                  desc: "Every piece selected to foster creativity and project professional excellence to clients and stakeholders.",
-                  img: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&q=80&w=1000"
-                }
-              ].map((item, index) => (
-                <motion.div 
-                  key={index}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: index * 0.2 }}
-                  className="group cursor-pointer"
-                >
-                  <div className="aspect-[4/5] overflow-hidden mb-8 relative bg-white">
-                    <img className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105 grayscale-[30%]" alt={item.title} src={item.img}/>
-                    <div className="absolute inset-0 flex items-center justify-center bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <span className="font-display-lg text-paper-white text-6xl drop-shadow-md">{item.step}</span>
-                    </div>
-                  </div>
-                  <h3 className="font-display-lg text-2xl md:text-3xl mb-3 text-primary">{item.title}</h3>
-                  <p className="font-body-md text-[15px] text-on-surface-variant leading-relaxed">{item.desc}</p>
-                </motion.div>
-              ))}
+            <h2 className="font-display-lg text-5xl md:text-6xl lg:text-7xl text-paper-white mb-7 leading-[1.02] tracking-tight">
+              Ready to Transform<br />
+              <span className="font-headline-md italic font-light text-gallery-gold">Your Space?</span>
+            </h2>
+            <p className="font-body-md text-paper-white/55 text-[16px] leading-relaxed max-w-lg mb-14">
+              Let The Kala Vault illuminate your environment with museum-quality artwork that inspires creativity, elevates your brand, and creates lasting impressions.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-5">
+              <Link
+                to="/inquire"
+                className="group inline-flex items-center gap-3 bg-gallery-gold text-primary font-label-caps text-[11px] uppercase tracking-[0.22em] px-12 py-4 hover:bg-paper-white transition-all duration-500"
+              >
+                Book a Consultation
+                <span className="material-symbols-outlined text-[15px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </Link>
+              <Link
+                to="/collections"
+                className="inline-flex items-center gap-2 border border-paper-white/25 text-paper-white font-label-caps text-[11px] uppercase tracking-[0.22em] px-12 py-4 hover:border-paper-white/60 hover:bg-paper-white/8 transition-all duration-500"
+              >
+                Browse Collection
+              </Link>
             </div>
-          </div>
+          </motion.div>
         </section>
-
-        {/* Global Network */}
-        <section className="py-24 md:py-32 px-8 md:px-margin-desktop max-w-[1800px] mx-auto">
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-16 lg:gap-24">
-            <motion.div 
-              className="w-full lg:w-1/2"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1 }}
-            >
-              <h2 className="font-display-lg text-4xl md:text-5xl text-primary mb-8 leading-tight">Our Global Network</h2>
-              <p className="font-body-md text-lg text-on-surface-variant mb-12 leading-relaxed">Headquartered in Zurich, with private viewing rooms in New York, Tokyo, and London. The Kala Vault maintains the world's most exclusive network of art-secured facilities and white-glove logistics partners.</p>
-              <div className="space-y-2">
-                {[
-                  { city: "Zurich", role: "HQ" },
-                  { city: "London", role: "" },
-                  { city: "Singapore", role: "" },
-                  { city: "Dubai", role: "" },
-                ].map((loc, i) => (
-                  <div key={i} className="flex justify-between items-center py-5 border-b border-outline/10 group cursor-pointer hover:border-gallery-gold transition-colors">
-                    <span className="font-display-lg text-2xl text-primary group-hover:text-gallery-gold transition-colors">{loc.city}</span>
-                    {loc.role ? (
-                       <span className="font-label-caps text-[10px] text-paper-white bg-primary px-3 py-1 uppercase tracking-widest">{loc.role}</span>
-                    ) : (
-                       <span className="material-symbols-outlined text-outline/40 group-hover:text-gallery-gold transition-colors">arrow_forward</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-            <motion.div 
-               className="w-full lg:w-1/2 h-[500px] lg:h-[600px] bg-subtle-smoke relative flex items-center justify-center p-8 border border-outline/5"
-               initial={{ opacity: 0, scale: 0.95 }}
-               whileInView={{ opacity: 1, scale: 1 }}
-               viewport={{ once: true }}
-               transition={{ duration: 0.8 }}
-            >
-              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #000 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
-              <div className="relative z-10 text-center p-12 bg-paper-white/90 backdrop-blur-md shadow-2xl max-w-sm border border-outline/5">
-                <p className="font-label-caps text-[10px] text-gallery-gold mb-4 uppercase tracking-[0.2em]">Private Viewings</p>
-                <h3 className="font-display-lg text-3xl mb-4 text-primary">Experience the Archive</h3>
-                <p className="font-body-md text-[14px] text-on-surface-variant mb-8 leading-relaxed">Access is strictly by invitation or referral from our curator network.</p>
-                <button className="px-8 py-4 bg-primary text-paper-white font-label-caps text-[11px] uppercase tracking-[0.2em] hover:bg-gallery-gold transition-colors w-full">Request Access</button>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-        
-        {/* CTA */}
-        <section className="py-32 bg-primary text-paper-white border-t border-outline/10">
-          <div className="px-8 md:px-margin-desktop max-w-4xl mx-auto text-center flex flex-col items-center">
-            <h2 className="font-display-lg text-4xl md:text-5xl mb-8">Ready to Transform Your Workspace?</h2>
-            <p className="font-body-md text-xl text-white/80 max-w-2xl text-center mb-12 leading-relaxed">Let the kala vault illuminate your corporate landscape with museum quality artwork that inspires creativity and projects excellence.</p>
-            <div className="flex gap-6 items-center">
-              <Link className="inline-block text-paper-white font-label-caps text-[12px] uppercase tracking-[0.3em] border-b border-gallery-gold pb-2 transition-all hover:tracking-[0.4em] hover:text-gallery-gold" to="/inquire">Book Consultation</Link>
-              <span className="text-white/30">•</span>
-              <a className="inline-block text-paper-white/80 hover:text-white font-label-caps text-[12px] uppercase tracking-[0.3em] transition-all" href="mailto:contact@infoartledger.com">contact@infoartledger.com</a>
-            </div>
-          </div>
-        </section>
-
       </main>
-
-      { /* Footer */ }
       <Footer />
     </div>
   );

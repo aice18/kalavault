@@ -1,161 +1,89 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
-class GalleryRoomTone {
-  ctx: AudioContext | null = null;
-  oscillators: { osc: OscillatorNode; gain: GainNode; lfo?: OscillatorNode; lfoGain?: GainNode }[] = [];
-  noiseSrc: AudioBufferSourceNode | null = null;
-  mainGain: GainNode | null = null;
-  baseVolume: number = 0.5;
-  isPlaying: boolean = false;
-
-  start() {
-    if (this.isPlaying) return;
-    
-    if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
-
-    this.isPlaying = true;
-    this.mainGain = this.ctx.createGain();
-    this.mainGain.connect(this.ctx.destination);
-    
-    // Very slow fade in
-    this.mainGain.gain.setValueAtTime(0, this.ctx.currentTime);
-    // Extremely low target volume for subtle gallery tone
-    this.mainGain.gain.linearRampToValueAtTime(this.baseVolume * 0.15, this.ctx.currentTime + 4);
-
-    // 1. Room Air (Brown-like Noise)
-    const bufferSize = this.ctx.sampleRate * 3; // 3 seconds
-    const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    let lastOut = 0;
-    for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        output[i] = (lastOut + (0.02 * white)) / 1.02; // Brown noise approximation
-        lastOut = output[i];
-        output[i] *= 4.0;
-    }
-    this.noiseSrc = this.ctx.createBufferSource();
-    this.noiseSrc.buffer = noiseBuffer;
-    this.noiseSrc.loop = true;
-
-    const noiseFilter = this.ctx.createBiquadFilter();
-    noiseFilter.type = 'lowpass';
-    noiseFilter.frequency.value = 250; // Very muffled air
-
-    const noiseGain = this.ctx.createGain();
-    noiseGain.gain.value = 0.08; // Quiet air
-
-    this.noiseSrc.connect(noiseFilter);
-    noiseFilter.connect(noiseGain);
-    noiseGain.connect(this.mainGain);
-    this.noiseSrc.start();
-
-    // 2. Subtle Resonant Hums (Like thick walls / museum acoustic)
-    const freqs = [65.41, 130.81]; // C2, C3
-    this.oscillators = freqs.map((freq, i) => {
-        const osc = this.ctx!.createOscillator();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        
-        const gain = this.ctx!.createGain();
-        gain.gain.value = i === 0 ? 0.04 : 0.02; // Deeper is slightly louder, but overall very quiet
-        
-        // Slow modulation for a slight "breathing" feel
-        const lfo = this.ctx!.createOscillator();
-        lfo.type = 'sine';
-        lfo.frequency.value = 0.05 + (i * 0.01);
-        const lfoGain = this.ctx!.createGain();
-        lfoGain.gain.value = gain.gain.value * 0.3; // modulate by 30% of base gain
-        lfo.connect(lfoGain);
-        lfoGain.connect(gain.gain);
-        lfo.start();
-
-        osc.connect(gain);
-        gain.connect(this.mainGain!);
-        osc.start();
-
-        return { osc, gain, lfo, lfoGain };
-    });
-  }
-
-  stop() {
-    if (!this.isPlaying || !this.ctx || !this.mainGain) return;
-    this.isPlaying = false;
-    
-    const now = this.ctx.currentTime;
-    this.mainGain.gain.cancelScheduledValues(now);
-    this.mainGain.gain.setValueAtTime(this.mainGain.gain.value, now);
-    this.mainGain.gain.linearRampToValueAtTime(0, now + 2);
-    
-    setTimeout(() => {
-        if (this.isPlaying) return;
-        try { this.noiseSrc?.stop(); } catch(e) {}
-        this.noiseSrc?.disconnect();
-        
-        this.oscillators.forEach(nodes => {
-            try { nodes.osc.stop(); } catch(e) {}
-            try { nodes.lfo?.stop(); } catch(e) {}
-            nodes.osc.disconnect();
-            nodes.gain.disconnect();
-        });
-        this.oscillators = [];
-        
-        this.mainGain?.disconnect();
-        this.mainGain = null;
-    }, 2000);
-  }
-
-  setVolume(val: number) {
-     this.baseVolume = val;
-     if (this.isPlaying && this.ctx && this.mainGain) {
-         this.mainGain.gain.linearRampToValueAtTime(val * 0.15, this.ctx.currentTime + 0.1);
-     }
-  }
-}
+// Using a high-quality, professionally mixed luxury lounge/deep house track
+// You can replace this URL with any local file (e.g., '/assets/premium-lounge.mp3')
+const PREMIUM_TRACK_URL = "https://cdn.pixabay.com/download/audio/2022/05/16/audio_dbdd365bc9.mp3?filename=deep-house-114389.mp3";
 
 export default function AmbientAudio() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [volume, setVolume] = useState(0.5);
-  const toneRef = useRef<GalleryRoomTone | null>(null);
+  const [volume, setVolume] = useState(0.4); // Start at a sophisticated, non-intrusive volume
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Initialize the audio element once
   useEffect(() => {
-    toneRef.current = new GalleryRoomTone();
+    const audio = new Audio(PREMIUM_TRACK_URL);
+    audio.loop = true;
+    audio.volume = volume;
+    // Preload audio for seamless playback
+    audio.preload = "auto";
+    
+    // Add a gentle fade-in effect on play
+    audio.addEventListener('play', () => {
+        audio.volume = 0;
+        let vol = 0;
+        const fadeInterval = setInterval(() => {
+            if (vol < volume) {
+                vol += 0.05;
+                audio.volume = Math.min(vol, volume);
+            } else {
+                clearInterval(fadeInterval);
+            }
+        }, 100);
+    });
+
+    audioRef.current = audio;
+
     return () => {
-      toneRef.current?.stop();
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Sync volume slider with actual audio volume
   useEffect(() => {
-    toneRef.current?.setVolume(volume);
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
   }, [volume]);
 
   const togglePlay = () => {
-    if (!toneRef.current) return;
+    if (!audioRef.current) return;
     
     if (isPlaying) {
-      toneRef.current.stop();
-      setIsPlaying(false);
+      // Gentle fade out before pausing
+      let vol = volume;
+      const fadeInterval = setInterval(() => {
+          if (vol > 0.05) {
+              vol -= 0.05;
+              audioRef.current!.volume = vol;
+          } else {
+              clearInterval(fadeInterval);
+              audioRef.current?.pause();
+              setIsPlaying(false);
+          }
+      }, 50);
     } else {
-      toneRef.current.start();
+      audioRef.current.play().catch(e => console.error("Audio playback failed:", e));
       setIsPlaying(true);
       setHasInteracted(true);
     }
   };
 
-  // Attempt to play slightly on first interaction
+  // Attempt to play on first interaction (required by modern browsers for audio playback)
   useEffect(() => {
     const handleFirstInteraction = () => {
-      if (!hasInteracted && toneRef.current && !isPlaying) {
-        toneRef.current.start();
-        setIsPlaying(true);
-        setHasInteracted(true);
+      if (!hasInteracted && audioRef.current && !isPlaying) {
+        audioRef.current.play().then(() => {
+            setIsPlaying(true);
+            setHasInteracted(true);
+        }).catch(() => {
+            // Autoplay blocked, wait for manual click
+        });
       }
       document.removeEventListener('click', handleFirstInteraction);
       document.removeEventListener('keydown', handleFirstInteraction);
@@ -181,22 +109,23 @@ export default function AmbientAudio() {
              className="hidden md:flex items-center gap-3 bg-paper-white/90 backdrop-blur-md border border-gallery-gold/20 px-4 py-2 shadow-sm pointer-events-auto"
           >
             <div className="flex items-center gap-1">
-                {/* Minimalist pulse animation */}
-                {[0, 1].map((i) => (
+                {/* Visualizer bars that pulse gently */}
+                {[1, 2, 3].map((i) => (
                     <motion.div 
                       key={i}
-                      className="w-1 h-1 bg-gallery-gold rounded-full"
-                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                      className="w-1 bg-gallery-gold rounded-t-sm"
+                      animate={{ height: ['4px', `${8 + i * 4}px`, '4px'] }}
                       transition={{ 
-                          duration: 4, 
+                          duration: 0.8, 
                           repeat: Infinity, 
-                          delay: i * 2,
+                          delay: i * 0.2,
                           ease: "easeInOut" 
                       }}
+                      style={{ transformOrigin: 'bottom' }}
                     />
                 ))}
             </div>
-            <span className="font-label-caps text-[9px] uppercase tracking-[0.2em] text-primary/60 pr-2 border-r border-gallery-gold/20">GALLERY</span>
+            <span className="font-label-caps text-[9px] uppercase tracking-[0.2em] text-primary/60 pr-2 border-r border-gallery-gold/20">PREMIUM AUDIO</span>
             <input 
               type="range" 
               min="0" 
@@ -214,7 +143,7 @@ export default function AmbientAudio() {
       <button 
         onClick={togglePlay}
         className="w-10 h-10 md:w-12 md:h-12 bg-paper-white/90 backdrop-blur-md border border-gallery-gold/20 flex items-center justify-center text-primary group-hover:text-gallery-gold transition-colors shadow-[0_4px_15px_rgba(212,175,55,0.1)] pointer-events-auto relative overflow-hidden"
-        aria-label={isPlaying ? "Mute Room Tone" : "Play Room Tone"}
+        aria-label={isPlaying ? "Mute Ambience" : "Play Ambience"}
       >
         <span className="material-symbols-outlined text-[16px] md:text-[18px] relative z-10 transition-transform duration-300">
           {isPlaying ? 'volume_up' : 'volume_off'}

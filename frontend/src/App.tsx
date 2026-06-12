@@ -16,7 +16,6 @@ import Services from "./pages/Services";
 import Subscriptions from "./pages/Subscriptions";
 import Inquiry from "./pages/Inquiry";
 import Collections from "./pages/Collections";
-import AmbientAudio from "./components/AmbientAudio";
 
 export default function App() {
   useEffect(() => {
@@ -39,7 +38,6 @@ export default function App() {
 
   return (
     <>
-      <AmbientAudio />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/collections" element={<Collections />} />

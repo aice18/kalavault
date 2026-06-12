@@ -20,12 +20,21 @@ const DEFAULT_OPTIONS: WatermarkOptions = {
   color: '#FFFFFF',
 };
 
+// Global in-memory cache for processed watermarked images
+const watermarkCache = new Map<string, string>();
+
 export async function addWatermarkToImage(
   imageSrc: string,
   options: WatermarkOptions = {}
 ): Promise<string> {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const cacheKey = `${imageSrc}_${JSON.stringify(opts)}`;
+  
+  if (watermarkCache.has(cacheKey)) {
+    return watermarkCache.get(cacheKey)!;
+  }
+
   return new Promise((resolve, reject) => {
-    const opts = { ...DEFAULT_OPTIONS, ...options };
     const img = new Image();
     img.crossOrigin = 'anonymous';
 
@@ -79,6 +88,7 @@ export async function addWatermarkToImage(
 
         // Convert canvas to data URL
         const watermarkedUrl = canvas.toDataURL('image/jpeg', 0.95);
+        watermarkCache.set(cacheKey, watermarkedUrl);
         resolve(watermarkedUrl);
       } catch (error) {
         reject(error);

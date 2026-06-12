@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import TopNavBar from '../components/TopNavBar';
 import Footer from '../components/Footer';
 
 export default function Inquiry() {
+  const [searchParams] = useSearchParams();
+  const artworkName = searchParams.get('artwork');
+  const artworkArtist = searchParams.get('artist');
+  
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const [message, setMessage] = useState('');
+  const [interest, setInterest] = useState('');
+
+  useEffect(() => {
+    if (artworkName) {
+      setMessage(`I am interested in inquiring about "${artworkName}"${artworkArtist ? ` by ${artworkArtist}` : ''}. Please provide more details on leasing portfolios and acquisitions.`);
+      setInterest('corporate-leasing');
+    }
+  }, [artworkName, artworkArtist]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,8 +97,13 @@ export default function Inquiry() {
                 <div className="flex flex-col gap-2">
                   <label className="font-label-caps text-[10px] uppercase tracking-[0.2em] text-primary/60">Inquiry Type</label>
                   <div className="relative">
-                    <select required className="w-full border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors appearance-none cursor-pointer">
-                      <option value="" disabled selected>Select an area of interest</option>
+                    <select 
+                      required 
+                      value={interest}
+                      onChange={(e) => setInterest(e.target.value)}
+                      className="w-full border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled>Select an area of interest</option>
                       <option value="corporate-leasing">Corporate Portfolio Leasing (Subscriptions)</option>
                       <option value="direct-acquisition">Direct Acquisition of Artwork</option>
                       <option value="architectural-scale">Architectural Scale Commission</option>
@@ -97,7 +115,14 @@ export default function Inquiry() {
 
                 <div className="flex flex-col gap-2">
                   <label className="font-label-caps text-[10px] uppercase tracking-[0.2em] text-primary/60">Message / Context</label>
-                  <textarea required rows={4} className="border border-outline/20 p-4 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors resize-none mt-2" placeholder="Tell us about your space, aesthetic preferences, or specific pieces of interest..."></textarea>
+                  <textarea 
+                    required 
+                    rows={4} 
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="border border-outline/20 p-4 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors resize-none mt-2" 
+                    placeholder="Tell us about your space, aesthetic preferences, or specific pieces of interest..."
+                  ></textarea>
                 </div>
 
                 <div className="pt-4 flex justify-end">

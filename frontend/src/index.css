@@ -289,3 +289,13 @@ body {
 .pipeline-stage:hover {
   transform: translateX(4px);
 }
+
+/* Tiled watermark repeating overlay */
+.watermark-tiled {
+  position: absolute;
+  inset: -50%; /* Extended to cover zoomed scale */
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><text fill='rgba(255,255,255,0.18)' font-size='10' font-family='Inter, sans-serif' font-weight='600' letter-spacing='0.15em' x='80' y='80' text-anchor='middle' transform='rotate(-35 80 80)'>© KALAVAULT</text></svg>");
+  background-repeat: repeat;
+  z-index: 15;
+}

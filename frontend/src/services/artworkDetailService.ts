@@ -1,4 +1,4 @@
-import { ALL_ARTWORKS, CollectionArtwork } from '../lib/collectionsData';
+import { ALL_ARTWORKS, CollectionArtwork, parseArtworkValueFromSize } from '../lib/collectionsData';
 import { PRICING_TIERS } from '../lib/rentalPricing';
 
 export interface ArtworkDetailedInfo extends CollectionArtwork {
@@ -10,6 +10,7 @@ export interface ArtworkDetailedInfo extends CollectionArtwork {
   condition?: string;
   pricing?: typeof PRICING_TIERS[keyof typeof PRICING_TIERS];
   monthlyRent?: string;
+  replacementValue?: number;
   relatedArtworks?: CollectionArtwork[];
 }
 
@@ -17,8 +18,31 @@ export interface ArtworkDetailedInfo extends CollectionArtwork {
  * Get artwork by ID with full details
  */
 export function getArtworkById(id: string): ArtworkDetailedInfo | null {
-  const artwork = ALL_ARTWORKS.find(art => art.id === id);
+  let artwork = ALL_ARTWORKS.find(art => art.id === id);
+  
+  if (!artwork) {
+    // Fallback: Map landing page string IDs to corresponding filenames
+    if (id === "1") artwork = ALL_ARTWORKS.find(art => art.name === "ImperialNoir");
+    else if (id === "2") artwork = ALL_ARTWORKS.find(art => art.name === "BurnishedWaters");
+    else if (id === "3") artwork = ALL_ARTWORKS.find(art => art.name === "DivineMajesty");
+    else if (id === "4") artwork = ALL_ARTWORKS.find(art => art.name === "GangesGhats");
+  }
+  
   if (!artwork) return null;
+
+  const artworkValue = parseArtworkValueFromSize(artwork.size);
+  const baseMonthlyRent = Math.round(artworkValue * 0.02); // 2% per month
+
+  const pricing = {
+    tier: artwork.tier,
+    label: PRICING_TIERS[artwork.tier].label,
+    valueRange: PRICING_TIERS[artwork.tier].valueRange,
+    yearlyRent: Math.round(artworkValue * 0.012 * 12),     // 1.2% per month discounted
+    halfYearlyRent: Math.round(artworkValue * 0.015 * 6), // 1.5% per month discounted
+    quarterlyRent: Math.round(artworkValue * 0.018 * 3),   // 1.8% per month discounted
+    monthlyRent: baseMonthlyRent,
+    description: PRICING_TIERS[artwork.tier].description,
+  };
 
   // Generate mock details based on artwork name and tier
   const details: ArtworkDetailedInfo = {
@@ -27,10 +51,11 @@ export function getArtworkById(id: string): ArtworkDetailedInfo | null {
     description: generateDescription(artwork.name, artwork.tier),
     medium: getRandomMedium(),
     yearCreated: 2020 + Math.floor(Math.random() * 4),
-    provenance: `Curated by Kalavault Gallery | ${artwork.size} edition`,
+    provenance: `Curated by Kalavault Gallery | ₹${artworkValue.toLocaleString('en-IN')} acquisition value`,
     condition: 'Excellent',
-    pricing: PRICING_TIERS[artwork.tier],
-    monthlyRent: `$${PRICING_TIERS[artwork.tier].monthly.toLocaleString()}/month`,
+    pricing: pricing as any,
+    monthlyRent: `₹${pricing.monthlyRent.toLocaleString('en-IN')}/month`,
+    replacementValue: artworkValue,
     relatedArtworks: getRelatedArtworks(artwork.id, artwork.tier),
   };
 

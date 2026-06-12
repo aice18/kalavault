@@ -64,6 +64,12 @@ const ARTWORK_FILES = [
   { name: 'SevenStallions', ext: 'png', size: '60k' },
 ];
 
+export function parseArtworkValueFromSize(size: string): number {
+  const num = parseInt(size);
+  if (isNaN(num)) return 15000;
+  return num * 1000;
+}
+
 /**
  * Helper to determine tier from size
  */

@@ -168,8 +168,7 @@ export async function getArtworkImageWithWatermark(
   }
 }
 
-export function formatPrice(priceInCents?: number): string {
-  if (!priceInCents) return 'Contact for pricing';
-  const priceInDollars = priceInCents / 100;
-  return `$${priceInDollars.toFixed(0)} / mo`;
+export function formatPrice(priceInRupees?: number): string {
+  if (!priceInRupees) return 'Contact for pricing';
+  return `₹${priceInRupees.toLocaleString('en-IN')} / mo`;
 }

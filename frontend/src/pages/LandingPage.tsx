@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
+import { motion, useScroll, useTransform, AnimatePresence, useInView } from 'motion/react';
 import { LATEST_ACQUISITIONS } from '../data';
 import TopNavBar from '../components/TopNavBar';
 import Footer from '../components/Footer';
 import { getArtworkImageWithWatermark, formatPrice } from '../services/artworkService';
 import { ArtworkTierBadge } from '../components/ArtworkTierInfo';
+import ChatBot from '../components/ChatBot';
 
 const SPACES_DATA = [
   {
@@ -105,7 +106,6 @@ export default function LandingPage() {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [trustSlide, setTrustSlide] = useState(0);
-  const [testimonialSlide, setTestimonialSlide] = useState(0);
   const [watermarkedImages, setWatermarkedImages] = useState<Record<number | string, string>>({});
 
   useEffect(() => {
@@ -117,14 +117,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTrustSlide((prev) => (prev + 1) % TRUST_IMAGES.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTestimonialSlide((prev) => (prev + 1) % TESTIMONIALS_DATA.length);
+      setTrustSlide((prev) => (prev + 1) % TESTIMONIALS_DATA.length);
     }, 8000);
     return () => clearInterval(timer);
   }, []);
@@ -147,16 +140,11 @@ export default function LandingPage() {
     loadWatermarks();
   }, []);
 
-  const nextTestimonial = () => {
-    setTestimonialSlide((prev) => (prev + 1) % TESTIMONIALS_DATA.length);
-  };
 
-  const prevTestimonial = () => {
-    setTestimonialSlide((prev) => (prev - 1 + TESTIMONIALS_DATA.length) % TESTIMONIALS_DATA.length);
-  };
 
   return (
     <div className="bg-paper-white text-primary font-body-md selection:bg-gallery-gold/30 min-h-screen">
+      <ChatBot />
       <TopNavBar />
 
       { /* Hero Section */}
@@ -214,14 +202,24 @@ export default function LandingPage() {
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
       >
-        <div className="flex justify-between items-end mb-10 md:mb-16">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 md:mb-16 gap-6">
           <div>
-            <p className="font-label-caps text-label-caps text-gallery-gold mb-4 uppercase tracking-[0.2em]">Curated Selection</p>
-            <h2 className="font-headline-lg text-headline-lg">Latest Acquisitions</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="font-label-caps text-[10px] text-gallery-gold uppercase tracking-[0.3em] block font-bold">
+                Curated Selection
+              </span>
+              <div className="h-[1px] w-12 bg-gallery-gold/30" />
+            </div>
+            <h2 className="font-display-lg text-4xl md:text-5xl lg:text-6xl tracking-tight text-primary leading-tight">
+              Latest <span className="italic font-light text-gallery-gold font-serif">Acquisitions</span>
+            </h2>
           </div>
-          <a className="font-label-caps text-label-caps border-b border-primary/20 pb-1 hover:border-primary transition-colors" href="/collections">VIEW COLLECTION</a>
+          <a className="font-label-caps text-[10px] uppercase tracking-[0.2em] border-b border-primary/20 pb-1.5 hover:border-gallery-gold hover:text-gallery-gold transition-all duration-300 font-bold" href="/collections">
+            VIEW COLLECTION
+          </a>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 md:auto-rows-[300px] gap-2 md:gap-4 grid-flow-row-dense">
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 md:auto-rows-[300px] gap-4 md:gap-6 grid-flow-row-dense">
           {LATEST_ACQUISITIONS.map((art, index) => {
             let layoutClass = "col-span-1 row-span-1";
             if (index === 0) layoutClass = "md:col-span-2 md:row-span-2";
@@ -232,28 +230,57 @@ export default function LandingPage() {
             return (
               <div
                 key={art.id}
-                className={`group cursor-pointer relative overflow-hidden bg-subtle-smoke ${layoutClass} h-[350px] md:h-auto border border-outline/5 hover:border-gallery-gold/30 transition-colors duration-700`}
+                className={`group cursor-pointer relative overflow-hidden ${layoutClass} h-[350px] md:h-auto rounded-xl border border-outline/5 shadow-[0_8px_30px_rgba(0,0,0,0.015)] transition-all duration-500`}
                 onClick={() => navigate('/artwork/' + art.id)}
               >
+                {/* Image zoom on hover */}
                 <img
-                  className="w-full h-full object-cover transition-transform duration-[2.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
+                  className="w-full h-full object-cover origin-center group-hover:scale-105 transition-transform duration-[1200ms] ease-out"
                   alt={art.title}
                   src={imageUrl}
                 />
-                {/* Shadow gradient for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10" />
 
-                <div className="absolute bottom-8 left-8 right-8 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] z-30 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="font-label-caps text-[10px] text-gallery-gold uppercase tracking-[0.2em]">{art.artist}</p>
-                    {art.tier && <ArtworkTierBadge tier={art.tier} showLabel={true} className="text-xs" />}
+                {/* Tiled watermark repeating overlay - fades out on hover detail overlay */}
+                <div className="watermark-tiled opacity-80 group-hover:opacity-10 transition-opacity duration-500" />
+
+                {/* Structured details display on hover */}
+                <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-between p-6 text-paper-white z-20">
+                  {/* Framing brackets simulating gallery mounting */}
+                  <div className="absolute top-4 left-4 w-3.5 h-3.5 border-t border-l border-gallery-gold/60 transition-transform duration-500 scale-95 group-hover:scale-100" />
+                  <div className="absolute top-4 right-4 w-3.5 h-3.5 border-t border-r border-gallery-gold/60 transition-transform duration-500 scale-95 group-hover:scale-100" />
+                  <div className="absolute bottom-4 left-4 w-3.5 h-3.5 border-b border-l border-gallery-gold/60 transition-transform duration-500 scale-95 group-hover:scale-100" />
+                  <div className="absolute bottom-4 right-4 w-3.5 h-3.5 border-b border-r border-gallery-gold/60 transition-transform duration-500 scale-95 group-hover:scale-100" />
+
+                  {/* Header Row */}
+                  <div className="flex justify-between items-center text-[10px] md:text-[11px] font-mono tracking-widest text-paper-white/60 border-b border-white/10 pb-3 uppercase">
+                    <span>{art.dimensions}</span>
+                    <span className="text-gallery-gold font-bold">{art.tier.toUpperCase()} TIER</span>
                   </div>
-                  <h3 className="font-headline-md text-2xl text-paper-white leading-tight">{art.title}</h3>
-                  <div className="flex justify-between items-end pt-2 border-t border-paper-white/20">
-                    <span className="text-sm text-paper-white/90">{art.price}</span>
-                    {art.replacementValue && (
-                      <span className="text-xs text-paper-white/70">Value: ${(art.replacementValue / 1000).toFixed(0)}K</span>
-                    )}
+
+                  {/* Center Content details */}
+                  <div className="my-auto text-center px-4">
+                    <h3 className="font-display-lg text-2xl md:text-3xl lg:text-4xl text-paper-white mb-2 leading-tight">
+                      {art.title}
+                    </h3>
+                    <p className="font-label-caps text-[11px] md:text-[12px] text-gallery-gold tracking-widest uppercase mb-3 font-semibold">
+                      {art.artist}
+                    </p>
+                    <p className="text-[12px] md:text-[13px] text-paper-white/75 font-body-md line-clamp-3 leading-relaxed max-w-md mx-auto">
+                      {art.medium} — {art.description}
+                    </p>
+                  </div>
+
+                  {/* Footer Row */}
+                  <div className="flex items-end justify-between pt-3 border-t border-white/10 text-[10px] md:text-[11px] font-mono tracking-widest">
+                    <div className="flex flex-col text-left">
+                      <span className="text-paper-white/40 text-[8.5px] md:text-[9.5px] uppercase tracking-widest block mb-0.5">Lease Cost</span>
+                      <span className="text-gallery-gold font-bold text-sm md:text-base leading-none">{art.price}</span>
+                    </div>
+                    
+                    <span className="font-label-caps text-[10px] md:text-[11px] text-paper-white font-bold tracking-widest group-hover:text-gallery-gold transition-colors duration-300 flex items-center gap-1.5">
+                      VIEW DETAILS
+                      <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -262,6 +289,101 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
+
+
+      {/* ── Merged Process + Method: The Journey ── */}
+      <JourneySection />
+
+      { /* Trust section / Corporate proof - styled as editorial showcase with merged reviews */}
+      <motion.section
+        className="py-section-gap px-margin-mobile md:px-margin-desktop overflow-hidden bg-paper-white"
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center max-w-7xl mx-auto">
+          {/* Left Column: Testimonial Installation Image */}
+          <div className="lg:col-span-5 relative">
+            <div className="aspect-[3/4] w-full overflow-hidden bg-surface-container border border-gallery-gold/20 shadow-2xl relative rounded-[2px]">
+              <AnimatePresence mode="popLayout">
+                <motion.img
+                  key={trustSlide}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  alt={`Portfolio Curation`}
+                  src={TESTIMONIALS_DATA[trustSlide].image}
+                  initial={{ opacity: 0, scale: 1.03 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.0, ease: "easeInOut" }}
+                />
+              </AnimatePresence>
+
+              <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-md border border-white/10 px-3 py-2 rounded z-20 flex justify-between items-center text-[9px] tracking-widest font-label-caps text-paper-white">
+                <span className="text-paper-white/60 uppercase">PLACEMENT REVIEW 0{trustSlide + 1}</span>
+                <span className="text-gallery-gold font-bold">VERIFIED</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Editorial Corporate Curation Copy + Testimonial Quote */}
+          <div className="lg:col-span-7 space-y-10 lg:pl-8 flex flex-col justify-between min-h-[450px]">
+            <div className="space-y-6">
+              <div>
+                <span className="font-label-caps text-[10px] text-gallery-gold tracking-[0.3em] uppercase block mb-3">// CURATION EXPERIENCE</span>
+                <h2 className="font-headline-md text-3xl md:text-4xl text-primary leading-tight font-medium tracking-tight">What They're Saying</h2>
+              </div>
+              <div className="w-12 h-[1px] bg-gallery-gold/40" />
+
+              {/* Dynamic Review Block */}
+              <div className="min-h-[180px] flex flex-col justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={trustSlide}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.4 }}
+                    className="space-y-6"
+                  >
+                    <div className="text-gallery-gold opacity-60">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg>
+                    </div>
+                    <blockquote className="font-quote italic text-xl md:text-2xl text-on-surface-variant leading-relaxed font-light">
+                      {TESTIMONIALS_DATA[trustSlide].quote}
+                    </blockquote>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* Slider navigation line indicators */}
+            <div className="flex gap-2 pt-2">
+              {TESTIMONIALS_DATA.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setTrustSlide(index)}
+                  className="h-[2px] transition-all duration-500 cursor-pointer w-4 bg-primary/20 hover:bg-primary/40"
+                  style={{ width: trustSlide === index ? '48px' : '16px', background: trustSlide === index ? 'var(--color-gallery-gold)' : 'rgba(0,0,0,0.2)' }}
+                  aria-label={`Go to case study ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.section>
+
+      {/* ─── JOURNEY COMPONENT Restructure ─── */}
+      {/* ───────────────────────────────────────────────────────────────────────────── */}
+      {/* JOURNEY SECTION  — merged Process + Method */}
+      {/* ───────────────────────────────────────────────────────────────────────────── */}
+      {/* Code content continues in definitions below... */}
+
+
+      {/* Trusted By — Premium Partner Band */}
+      <TrustedByBand />
+
+      { /* Footer */}
       { /* Artifact Spotlight: Spaces Carousel */}
       <motion.section
         className="w-full relative bg-subtle-smoke min-h-[80vh] flex items-center justify-center overflow-hidden py-32" id="spotlight"
@@ -331,7 +453,7 @@ export default function LandingPage() {
               </AnimatePresence>
 
               <div className="mt-8 pt-6 border-t border-primary/10 flex justify-between items-center group cursor-pointer">
-                <span className="font-label-caps text-[11px] text-primary group-hover:text-gallery-gold transition-colors uppercase">Inquire About This Curation</span>
+                <span className="font-label-caps text-[11px] text-primary group-hover:text-gallery-gold transition-colors uppercase">Curation Coming Soon.</span>
                 <span className="material-symbols-outlined text-sm text-primary group-hover:text-gallery-gold transition-colors group-hover:translate-x-2">arrow_forward</span>
               </div>
             </div>
@@ -340,280 +462,389 @@ export default function LandingPage() {
         </div>
       </motion.section>
 
-      { /* How it Works */}
-      <motion.section
-        className="py-section-gap px-margin-mobile md:px-margin-desktop bg-subtle-smoke"
-        variants={sectionVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-      >
-        <div className="max-w-6xl mx-auto text-center mb-16">
-          <p className="font-label-caps text-label-caps text-gallery-gold mb-4 uppercase tracking-[0.2em] text-[10px]">Our Process</p>
-          <h2 className="font-headline-md text-2xl md:text-3xl">Art Simplified for Your Life</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
-          <div className="text-center space-y-4">
-            <div className="flex justify-center mb-4">
-              <span className="material-symbols-outlined text-[28px] text-primary/80">search</span>
-            </div>
-            <h3 className="font-headline-md text-lg">Browse</h3>
-            <p className="font-body-md text-on-surface-variant max-w-[200px] mx-auto text-[13px] leading-relaxed">Explore our vault of thousands of museum-grade pieces curated by experts.</p>
-          </div>
-          <div className="text-center space-y-4">
-            <div className="flex justify-center mb-4">
-              <span className="material-symbols-outlined text-[28px] text-primary/80">calendar_today</span>
-            </div>
-            <h3 className="font-headline-md text-lg">Subscribe</h3>
-            <p className="font-body-md text-on-surface-variant max-w-[200px] mx-auto text-[13px] leading-relaxed">Choose a monthly plan that fits your space and commitment level.</p>
-          </div>
-          <div className="text-center space-y-4">
-            <div className="flex justify-center mb-4">
-              <span className="material-symbols-outlined text-[28px] text-primary/80">home_pin</span>
-            </div>
-            <h3 className="font-headline-md text-lg">Install</h3>
-            <p className="font-body-md text-on-surface-variant max-w-[200px] mx-auto text-[13px] leading-relaxed">White-glove delivery and professional installation included in your plan.</p>
-          </div>
-          <div className="text-center space-y-4">
-            <div className="flex justify-center mb-4">
-              <span className="material-symbols-outlined text-[28px] text-primary/80">autorenew</span>
-            </div>
-            <h3 className="font-headline-md text-lg">Rotate</h3>
-            <p className="font-body-md text-on-surface-variant max-w-[200px] mx-auto text-[13px] leading-relaxed">Refresh your space whenever you want. Trade for a new piece at any time.</p>
-          </div>
-        </div>
-      </motion.section>
-
-      { /* The Art of Curation Simplified */}
-      <motion.section
-        className="py-section-gap px-margin-mobile md:px-margin-desktop bg-paper-white relative"
-        variants={sectionVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start max-w-7xl mx-auto">
-          <div className="lg:col-span-5 sticky top-32 self-start bg-paper-white z-10 py-4 lg:py-12">
-            <p className="font-label-caps text-[10px] text-gallery-gold mb-4 uppercase tracking-[0.2em]">THE METHOD</p>
-            <h2 className="font-display-lg text-4xl md:text-5xl text-primary mb-8 tracking-tight">The Art of Curation Simplified</h2>
-            <p className="font-body-md text-on-surface-variant max-w-md leading-relaxed text-[16px]">
-              We bridge the gap between world-class creators and sophisticated environments through a seamless, white-glove rental and acquisition ecosystem.
-            </p>
-          </div>
-          <div className="lg:col-span-6 lg:col-start-7 flex flex-col gap-24 py-12">
-            <div className="flex gap-8 group">
-              <span className="font-display-lg text-4xl text-gallery-gold/40 group-hover:text-gallery-gold transition-colors duration-500">01</span>
-              <div>
-                <h4 className="font-headline-lg text-2xl text-primary mb-4">Digital Consultation</h4>
-                <p className="font-body-md text-on-surface-variant leading-relaxed text-[15px]">Our curators review your spatial architecture and existing aesthetic to propose a cohesive visual narrative.</p>
-              </div>
-            </div>
-            <div className="flex gap-8 group">
-              <span className="font-display-lg text-4xl text-gallery-gold/40 group-hover:text-gallery-gold transition-colors duration-500">02</span>
-              <div>
-                <h4 className="font-headline-lg text-2xl text-primary mb-4">Vault Access</h4>
-                <p className="font-body-md text-on-surface-variant leading-relaxed text-[15px]">Gain private access to our unlisted collection of physical and digital assets, reserved for enterprise partners.</p>
-              </div>
-            </div>
-            <div className="flex gap-8 group">
-              <span className="font-display-lg text-4xl text-gallery-gold/40 group-hover:text-gallery-gold transition-colors duration-500">03</span>
-              <div>
-                <h4 className="font-headline-lg text-2xl text-primary mb-4">Precision Logistics</h4>
-                <p className="font-body-md text-on-surface-variant leading-relaxed text-[15px]">Climate-controlled transport and museum-grade installation handled by our specialized interior technicians.</p>
-              </div>
-            </div>
-            <div className="flex gap-8 group">
-              <span className="font-display-lg text-4xl text-gallery-gold/40 group-hover:text-gallery-gold transition-colors duration-500">04</span>
-              <div>
-                <h4 className="font-headline-lg text-2xl text-primary mb-4">Asset Rotation</h4>
-                <p className="font-body-md text-on-surface-variant leading-relaxed text-[15px]">Maintain a living gallery with quarterly rotations that keep your environment inspiring and dynamic.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      { /* Trust Section / Gallery Context */}
-      <motion.section
-        className="py-section-gap px-margin-mobile md:px-margin-desktop overflow-hidden"
-        variants={sectionVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center max-w-7xl mx-auto">
-          <div className="relative">
-            <div className="aspect-[4/5] bg-surface-container overflow-hidden relative">
-              <AnimatePresence mode="popLayout">
-                <motion.img
-                  key={trustSlide}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  alt="A premium luxury interior"
-                  src={TRUST_IMAGES[trustSlide]}
-                  initial={{ opacity: 0, scale: 1.05 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.5, ease: "easeInOut" }}
-                />
-              </AnimatePresence>
-            </div>
-            <div className="absolute -bottom-10 -right-10 hidden md:block w-64 aspect-square border-8 border-paper-white bg-surface-container-highest overflow-hidden shadow-xl">
-              <img className="w-full h-full object-cover" alt="A detailed close-up shot of a white-glove professional" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9hgPKm3x2DG62NPUAcYKLIHPkK6WSbVlR0DFSeLOnHIBKMPZuxOHRMlC5KJStxLq9Q27AerCIrcUEnAuMGXEqXBX7UiAPVHAmYFo4fgl4sTu5DGqtc1YwOQswHQDHID5tqG4wFmdzvkfC4fXdyicI46HcOUTD-hOWjp6kXjoPqKpwrOZbkulXL4Wbrv4QxURF81MIVXtGwS1n1rQEV6YDVxnJrJ_NjbpN5AhJfdKRSvRJQu9LqAYvO4FQ5Cg6N5QwSA67u40tFNs" />
-            </div>
-          </div>
-          <div className="space-y-12 md:pl-8">
-            <div>
-              <h2 className="font-headline-md text-2xl md:text-3xl mb-6 leading-tight">Empowering Corporate Environments</h2>
-              <p className="font-body-md text-on-surface-variant leading-relaxed text-[15px]">
-                We transform sterile workspaces into dynamic galleries that reflect your brand's sophistication. The Kala Vault provides access to premium artwork without the substantial upfront capital bound to permanent acquisition.
-              </p>
-            </div>
-            <div className="pt-8 border-t border-gallery-gold/20">
-              <p className="font-label-caps text-label-caps text-charcoal-text mb-8 uppercase tracking-widest text-[10px]">Trusted by leading designers</p>
-              <div className="flex gap-8 grayscale opacity-50 flex-wrap">
-                <div className="font-display-lg-mobile text-[16px] font-bold">ITC</div>
-                <div className="font-display-lg-mobile text-[16px] font-bold">JLL</div>
-                <div className="font-display-lg-mobile text-[16px] font-bold">Lucias</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      { /* Client Testimonials Section - Redesigned Premium Editorial Layout */ }
-      <motion.section 
-        className="py-section-gap px-margin-mobile md:px-margin-desktop bg-matte-black text-paper-white overflow-hidden relative"
-        variants={sectionVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        style={{
-          backgroundImage: 'radial-gradient(ellipse at top right, rgba(212, 175, 55, 0.05) 0%, transparent 70%)'
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/20 z-0 pointer-events-none" />
-        
-        <div className="max-w-[1440px] mx-auto relative z-10">
-          <div className="mb-16 md:mb-24 flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-8">
-            <div>
-              <p className="font-label-caps text-[10px] text-gallery-gold tracking-[0.3em] uppercase mb-4">// PORTFOLIO PLACEMENTS</p>
-              <h2 className="font-headline-lg text-headline-lg text-paper-white leading-none">Client Testimonials</h2>
-            </div>
-            <div className="mt-6 md:mt-0 font-label-caps text-[11px] text-paper-white/50 tracking-[0.2em] uppercase">
-              SELECT INSTALLATIONS & EXHIBITIONS
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
-            {/* Left Column: Framed Image Showcase */}
-            <div className="lg:col-span-5 order-2 lg:order-1">
-              <div className="border border-white/10 p-3 bg-black/40 backdrop-blur-sm shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] relative group rounded-sm max-w-md mx-auto lg:max-w-none">
-                <div className="aspect-[3/4] w-full overflow-hidden bg-matte-black relative rounded-[1px] border border-white/5">
-                  <AnimatePresence mode="popLayout">
-                    <motion.img
-                      key={testimonialSlide}
-                      src={TESTIMONIALS_DATA[testimonialSlide].image}
-                      alt={`${TESTIMONIALS_DATA[testimonialSlide].client} Installation`}
-                      className="absolute inset-0 w-full h-full object-cover grayscale-[10%] group-hover:scale-105 transition-transform duration-[2s] ease-[cubic-bezier(0.16,1,0.3,1)]"
-                      initial={{ opacity: 0, scale: 1.05 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.8, ease: "easeInOut" }}
-                    />
-                  </AnimatePresence>
-                  
-                  <div className="absolute bottom-5 left-5 right-5 bg-black/60 backdrop-blur-md border border-white/10 px-4 py-3 rounded-[2px] z-20 flex justify-between items-center text-[10px] tracking-widest font-label-caps text-paper-white">
-                    <span className="text-paper-white/60 uppercase">CASE STUDY: 0{testimonialSlide + 1}</span>
-                    <span className="text-gallery-gold font-bold">VERIFIED</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Editorial Testimonial Text */}
-            <div className="lg:col-span-7 order-1 lg:order-2 flex flex-col justify-between min-h-[480px]">
-              <div className="space-y-6">
-                <span className="font-label-caps text-[11px] text-gallery-gold tracking-[0.25em] uppercase block">
-                  {TESTIMONIALS_DATA[testimonialSlide].project}
-                </span>
-                
-                <div className="w-16 h-px bg-gallery-gold/40 my-6" />
-
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={testimonialSlide}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="space-y-8"
-                  >
-                    <blockquote className="font-quote italic text-2xl md:text-3xl lg:text-4xl text-paper-white/95 leading-relaxed font-light tracking-wide">
-                      {TESTIMONIALS_DATA[testimonialSlide].quote}
-                    </blockquote>
-                    
-                    <div className="pt-4">
-                      <cite className="font-label-caps text-sm text-gallery-gold tracking-[0.2em] uppercase not-italic block font-bold">
-                        {TESTIMONIALS_DATA[testimonialSlide].client}
-                      </cite>
-                      <span className="text-xs text-paper-white/50 block mt-1 uppercase tracking-[0.15em]">
-                        {TESTIMONIALS_DATA[testimonialSlide].location}
-                      </span>
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Editorial bottom navigation bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-12 mt-12 border-t border-white/5 gap-6">
-                {/* Custom Slide Number */}
-                <div className="flex items-center gap-6">
-                  <span className="font-quote italic text-2xl text-gallery-gold">
-                    0{testimonialSlide + 1}
-                  </span>
-                  <div className="w-12 h-px bg-white/20" />
-                  <span className="font-quote italic text-sm text-paper-white/40">
-                    0{TESTIMONIALS_DATA.length}
-                  </span>
-                </div>
-
-                {/* Line Indicators */}
-                <div className="flex gap-2">
-                  {TESTIMONIALS_DATA.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setTestimonialSlide(index)}
-                      className={`h-[2px] transition-all duration-500 cursor-pointer ${testimonialSlide === index ? 'w-10 bg-gallery-gold' : 'w-4 bg-white/25 hover:bg-white/50'}`}
-                      aria-label={`Go to slide ${index + 1}`}
-                    />
-                  ))}
-                </div>
-
-                {/* Text navigation triggers */}
-                <div className="flex items-center gap-8 font-label-caps text-[11px] tracking-[0.2em]">
-                  <button
-                    onClick={prevTestimonial}
-                    className="text-paper-white/60 hover:text-gallery-gold transition-colors duration-300 cursor-pointer uppercase flex items-center gap-2 group"
-                  >
-                    <span className="material-symbols-outlined text-xs group-hover:-translate-x-1 transition-transform">arrow_back</span>
-                    [ PREV ]
-                  </button>
-                  <button
-                    onClick={nextTestimonial}
-                    className="text-paper-white/60 hover:text-gallery-gold transition-colors duration-300 cursor-pointer uppercase flex items-center gap-2 group"
-                  >
-                    [ NEXT ]
-                    <span className="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      { /* Footer */}
       <Footer />
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JOURNEY SECTION  — merged Process + Method
+// ─────────────────────────────────────────────────────────────────────────────
+const JOURNEY_STEPS = [
+  {
+    num: '01',
+    phase: 'Discover',
+    icon: 'search',
+    tag: 'Browse the Vault',
+    title: 'Explore Thousands of Museum-Grade Pieces',
+    body: 'Step inside our private digital vault — thousands of museum-quality originals, limited editions, and commissioned works. Our experts pre-curate selections matched to your space, aesthetic, and ambition.',
+    detail: 'Browse by medium, dimension, mood, or let our curators surprise you with an editorial shortlist built around your brief.',
+    accent: '#D4AF37',
+    color: 'from-amber-950/40 to-stone-950/60',
+    img: 'https://images.unsplash.com/photo-1578301978162-7aae4d755744?auto=format&fit=crop&q=80&w=1200',
+  },
+  {
+    num: '02',
+    phase: 'Consult',
+    icon: 'chat_bubble',
+    tag: 'Digital Consultation',
+    title: 'A Curator Reviews Your Space',
+    body: 'Our specialist curators review your floor plans, existing décor palette, and atmospheric intent to propose a cohesive visual narrative — bespoke to your architecture.',
+    detail: 'Every consultation ends in a curated mood board, placement diagrams, and a lighting brief so you know exactly how each work lands.',
+    accent: '#C9B99A',
+    color: 'from-stone-900/50 to-zinc-950/60',
+    img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1200',
+  },
+  {
+    num: '03',
+    phase: 'Subscribe',
+    icon: 'calendar_today',
+    tag: 'Choose Your Plan',
+    title: 'Monthly Plans Built Around Your Lifestyle',
+    body: 'Choose from our carefully designed subscription tiers — whether you want a single statement piece or a full gallery rotation for a corporate flagship.',
+    detail: 'Flexible commitment levels. Pause, swap, or upgrade at any time. No hidden fees. Insurance and maintenance always included.',
+    accent: '#A8C5A0',
+    color: 'from-emerald-950/40 to-stone-950/60',
+    img: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1200',
+  },
+  {
+    num: '04',
+    phase: 'Install',
+    icon: 'home_pin',
+    tag: 'White-Glove Delivery',
+    title: 'Precision Logistics, Zero Effort',
+    body: 'Climate-controlled transport, museum-grade hanging systems, and certified interior technicians handle every detail of the installation — so you never touch a drill.',
+    detail: 'Full setup in a single visit. Lighting calibration. Placement certification. Every piece documented and insured from our vault to your wall.',
+    accent: '#9BB8D4',
+    color: 'from-sky-950/40 to-stone-950/60',
+    img: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&q=80&w=1200',
+  },
+  {
+    num: '05',
+    phase: 'Rotate',
+    icon: 'autorenew',
+    tag: 'Asset Rotation',
+    title: 'A Living Gallery That Never Gets Stale',
+    body: 'Quarterly, bi-annual, or on-demand — your collection evolves. Our team arrives, removes the current works, and installs the next chapter of your curated story.',
+    detail: 'Each rotation is a new editorial moment. We track provenance, handle storage, and keep your space perpetually inspiring.',
+    accent: '#D4A0AF',
+    color: 'from-rose-950/40 to-stone-950/60',
+    img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&q=80&w=1200',
+  },
+];
+
+function JourneySection() {
+  const [active, setActive] = useState(0);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(sectionRef, { once: true, margin: '-100px' });
+  const step = JOURNEY_STEPS[active];
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden py-16 md:py-24"
+      style={{ background: '#0c0c0c' }}
+    >
+      {/* Floating ambient blob tied to active step color */}
+      <motion.div
+        key={active + '-blob'}
+        className="absolute w-[600px] h-[600px] rounded-full pointer-events-none -z-10"
+        style={{
+          background: `radial-gradient(circle, ${step.accent}12 0%, transparent 65%)`,
+          top: '50%', left: '50%',
+          translateX: '-50%', translateY: '-50%',
+        }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+      />
+
+      {/* Fine grain texture */}
+      <div
+        className="absolute inset-0 pointer-events-none -z-10"
+        style={{
+          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.03\'/%3E%3C/svg%3E")',
+          backgroundRepeat: 'repeat',
+          backgroundSize: '128px',
+        }}
+      />
+
+      <div className="relative z-10 max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+          
+          {/* Left Column: Vertical Timeline & Header (5-Columns) */}
+          <div className="lg:col-span-5 flex flex-col justify-between h-full min-h-[460px]">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-px w-8" style={{ background: step.accent }} />
+                <span className="font-label-caps text-[10px] uppercase tracking-[0.4em]" style={{ color: step.accent }}>The Process</span>
+              </div>
+              
+              <h2 className="font-display-lg text-5xl md:text-6xl lg:text-7xl text-white leading-[1.1] tracking-tight mb-8">
+                From Vault
+                <span className="block font-headline-md italic font-light" style={{ color: step.accent }}>to Your Wall.</span>
+              </h2>
+
+              {/* Vertical Timeline navigation */}
+              <div className="relative pl-6 flex flex-col gap-6">
+                {/* Vertical Line track */}
+                <div className="absolute left-[3px] top-2 bottom-2 w-[1px] bg-white/10" />
+                
+                {/* Active sliding indicator marker */}
+                <motion.div
+                  className="absolute left-[1px] w-[3px] h-6 rounded-full"
+                  style={{ background: step.accent }}
+                  animate={{ y: active * 48 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+
+                {JOURNEY_STEPS.map((s, i) => (
+                  <button
+                    key={s.num}
+                    onClick={() => setActive(i)}
+                    className="flex items-center gap-4 text-left group transition-all duration-300 cursor-pointer h-6"
+                  >
+                    <span
+                      className="font-mono text-[11px] md:text-[12px] font-bold tracking-wider transition-colors duration-300 w-5"
+                      style={{ color: active === i ? step.accent : 'rgba(255,255,255,0.2)' }}
+                    >
+                      {s.num}
+                    </span>
+                    <span
+                      className="font-label-caps text-[13px] md:text-[14px] uppercase tracking-[0.2em] font-semibold transition-colors duration-300 group-hover:text-white"
+                      style={{ color: active === i ? '#fff' : 'rgba(255,255,255,0.35)' }}
+                    >
+                      {s.phase}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Pagination / Controls at bottom */}
+            <div className="flex items-center gap-4 mt-10">
+              <button
+                onClick={() => setActive(Math.max(0, active - 1))}
+                disabled={active === 0}
+                className="w-9 h-9 flex items-center justify-center border border-white/15 text-white/30 hover:border-white/40 hover:text-white disabled:opacity-10 transition-all duration-300 rounded-lg cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+              </button>
+              <button
+                onClick={() => setActive(Math.min(JOURNEY_STEPS.length - 1, active + 1))}
+                disabled={active === JOURNEY_STEPS.length - 1}
+                className="w-9 h-9 flex items-center justify-center border text-white/60 hover:text-white disabled:opacity-10 transition-all duration-300 rounded-lg cursor-pointer"
+                style={{ borderColor: `${step.accent}30`, background: `${step.accent}10` }}
+              >
+                <span className="material-symbols-outlined text-[16px]" style={{ color: step.accent }}>arrow_forward</span>
+              </button>
+              <span className="font-mono text-[10px] text-white/30 tracking-widest ml-2 uppercase">
+                Step {active + 1} of {JOURNEY_STEPS.length}
+              </span>
+            </div>
+          </div>
+
+          {/* Right Column: Symmetrical step panel display (7-Columns) */}
+          <div className="lg:col-span-7 h-[460px] relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl bg-stone-950">
+            {/* Image backdrop container */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step.img}
+                className="absolute inset-0 w-full h-full"
+                initial={{ scale: 1.05, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.98, opacity: 0 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <img
+                  src={step.img}
+                  alt={step.phase}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/20" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Corner Framing accents for visual style */}
+            <div className="absolute top-4 left-4 w-3.5 h-3.5 border-t border-l border-white/20 pointer-events-none" />
+            <div className="absolute top-4 right-4 w-3.5 h-3.5 border-t border-r border-white/20 pointer-events-none" />
+            <div className="absolute bottom-4 left-4 w-3.5 h-3.5 border-b border-l border-white/20 pointer-events-none" />
+            <div className="absolute bottom-4 right-4 w-3.5 h-3.5 border-b border-r border-white/20 pointer-events-none" />
+
+            {/* Floating Glassmorphic Details Card (positioned inside the panel) */}
+            <div className="absolute bottom-6 left-6 right-6 p-6 md:p-8 bg-black/60 backdrop-blur-md border border-white/10 rounded-xl flex flex-col justify-between min-h-[220px] z-20">
+              <div>
+                {/* Meta Row */}
+                <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="font-mono text-[10.5px] md:text-[11.5px] font-bold tracking-widest" style={{ color: step.accent }}>
+                      PHASE {step.num}
+                    </span>
+                    <div className="w-[1px] h-3 bg-white/20" />
+                    <span className="text-[10px] md:text-[10.5px] text-white/40 font-mono tracking-widest block uppercase font-medium">
+                      {step.tag}
+                    </span>
+                  </div>
+                  <span className="material-symbols-outlined text-base" style={{ color: step.accent }}>
+                    {step.icon}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3 className="font-display-sm text-xl md:text-2xl text-white tracking-wide mb-3">
+                  {step.title}
+                </h3>
+
+                {/* Description */}
+                <p className="text-[13px] md:text-[14px] text-white/80 font-body-md leading-relaxed mb-4">
+                  {step.body}
+                </p>
+              </div>
+
+              {/* Editorial Subquote */}
+              <div className="border-l border-white/20 pl-4 py-0.5 mt-2">
+                <p className="text-[11.5px] md:text-[12.5px] text-white/40 font-body-sm leading-relaxed italic">
+                  {step.detail}
+                </p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRUSTED BY — Real Clients Only
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Only 3 real clients. Duplicated 6× for a full seamless marquee loop.
+const REAL_PARTNERS = [
+  { id: 'itc', label: 'ITC', sub: 'ITC Group' },
+  { id: 'jll', label: 'JLL', sub: 'JLL' },
+  { id: 'lucias', label: 'Lucias', sub: 'Lucias Café' },
+];
+
+function PartnerLogo({ id, label, sub }: { id: string; label: string; sub: string; key?: any; }) {
+  return (
+    <div className="px-16 py-8 flex flex-col items-center justify-center border-r border-white/5 cursor-default select-none group" style={{ minWidth: '220px' }}>
+      {/* SVG wordmark per brand */}
+      {id === 'itc' && (
+        <svg viewBox="0 0 120 48" className="h-10 w-auto mb-2 transition-all duration-500" fill="#D4AF37">
+          <text
+            x="60" y="36"
+            textAnchor="middle"
+            fontFamily="'Playfair Display', serif"
+            fontWeight="900"
+            fontSize="30"
+            letterSpacing="10"
+            fill="#D4AF37"
+          >ITC</text>
+          <line x1="14" y1="42" x2="106" y2="42" stroke="#D4AF37" strokeWidth="1.5" opacity="0.5" />
+        </svg>
+      )}
+      {id === 'jll' && (
+        <svg viewBox="0 0 120 48" className="h-10 w-auto mb-2" fill="#D4AF37">
+          <text
+            x="60" y="38"
+            textAnchor="middle"
+            fontFamily="'Inter', sans-serif"
+            fontWeight="800"
+            fontSize="32"
+            letterSpacing="4"
+            fill="#D4AF37"
+          >JLL</text>
+        </svg>
+      )}
+      {id === 'lucias' && (
+        <svg viewBox="0 0 160 48" className="h-10 w-auto mb-2" fill="#D4AF37">
+          <text
+            x="80" y="34"
+            textAnchor="middle"
+            fontFamily="'Playfair Display', serif"
+            fontWeight="500"
+            fontStyle="italic"
+            fontSize="28"
+            letterSpacing="3"
+            fill="#D4AF37"
+          >Lucias</text>
+          <text
+            x="80" y="46"
+            textAnchor="middle"
+            fontFamily="'Inter', sans-serif"
+            fontWeight="400"
+            fontSize="8"
+            letterSpacing="4"
+            fill="#D4AF37"
+            opacity="0.5"
+          >CAFÉ</text>
+        </svg>
+      )}
+      <span className="font-label-caps text-[8px] uppercase tracking-[0.25em] text-white/20">{sub}</span>
+    </div>
+  );
+}
+
+function TrustedByBand() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  // Repeat 6× for seamless infinite scroll
+  const marqueeItems = Array.from({ length: 6 }, () => REAL_PARTNERS).flat();
+
+  return (
+    <section
+      ref={ref}
+      className="relative overflow-hidden"
+      style={{ background: '#000000' }}
+    >
+      {/* Top gold gradient line */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-gallery-gold/50 to-transparent" />
+
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-[1400px] mx-auto px-8 md:px-16 pt-14 pb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-6"
+      >
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-px w-6 bg-gallery-gold" />
+            <span className="font-label-caps text-[9px] uppercase tracking-[0.4em] text-gallery-gold">Our Clients</span>
+          </div>
+          <h2 className="font-display-lg text-3xl md:text-4xl text-white tracking-tight leading-tight">
+            Trusted By<br />
+            <span className="font-headline-md italic font-light text-gallery-gold">India's Finest.</span>
+          </h2>
+        </div>
+        <p className="font-body-sm text-white/30 max-w-xs text-[13px] leading-relaxed">
+          Three landmark institutions that chose Kala Vault to define the aesthetic soul of their spaces.
+        </p>
+      </motion.div>
+
+      {/* Marquee */}
+      <div className="relative overflow-hidden border-y border-white/5">
+        <style>{`
+          @keyframes kv-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(calc(-220px * 3 - 1px * 3)); }
+          }
+          .kv-scroll { animation: kv-scroll 18s linear infinite; }
+          .kv-scroll:hover { animation-play-state: paused; }
+        `}</style>
+        <div className="kv-scroll flex w-max">
+          {marqueeItems.map((p, i) => (
+            <PartnerLogo key={i} id={p.id} label={p.label} sub={p.sub} />
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom gold gradient line */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-gallery-gold/30 to-transparent" />
+    </section>
   );
 }

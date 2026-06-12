@@ -40,6 +40,30 @@ export default function TopNavBar() {
     };
   }, [isMenuOpen]);
 
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error('Error attempting to enable fullscreen:', err);
+      });
+    } else {
+      document.exitFullscreen().catch((err) => {
+        console.error('Error attempting to exit fullscreen:', err);
+      });
+    }
+  };
+
   const isActive = (path: string) => location.pathname === path;
   
   const isHeroDark = !isScrolled && (location.pathname === '/' || location.pathname === '/manifesto');
@@ -128,7 +152,7 @@ export default function TopNavBar() {
             </div>
 
             {/* Mobile Nav Links */}
-            <div className="flex flex-col gap-8 items-center justify-center flex-1">
+            <div className="flex flex-col gap-6 items-center justify-center flex-1">
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.path}
@@ -151,11 +175,11 @@ export default function TopNavBar() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: navLinks.length * 0.1 + 0.2, duration: 0.5, ease: "easeOut" }}
-                  className="mt-8"
+                  className="mt-6 flex flex-col gap-4 w-full max-w-[280px]"
                 >
                  <Link 
                     to="/signin" 
-                    className="font-label-caps text-[12px] font-bold uppercase tracking-[0.2em] text-paper-white bg-primary px-10 py-4 hover:bg-gallery-gold transition-colors block"
+                    className="font-label-caps text-[12px] font-bold uppercase tracking-[0.2em] text-paper-white bg-primary px-10 py-4 hover:bg-gallery-gold transition-colors block text-center"
                   >
                     SIGN IN PORTAL
                  </Link>
@@ -173,7 +197,7 @@ export default function TopNavBar() {
                     <a className="material-symbols-outlined text-primary text-[20px]" href="#">public</a>
                     <a className="material-symbols-outlined text-primary text-[20px]" href="#">share</a>
                 </div>
-                <span className="font-label-caps text-[9px] text-tertiary-fixed-dim uppercase tracking-widest">© 2024</span>
+                <span className="font-label-caps text-[9px] text-tertiary-fixed-dim uppercase tracking-widest">© 2026</span>
             </motion.div>
           </motion.div>
         )}

@@ -11,6 +11,9 @@ interface PricingDetailsProps {
   tier: ArtworkTier;
   monthlyRent: number;
   replacementValue: number;
+  quarterlyRent?: number;
+  halfYearlyRent?: number;
+  yearlyRent?: number;
   compact?: boolean;
 }
 
@@ -51,21 +54,30 @@ export function PricingDetails({
   tier,
   monthlyRent,
   replacementValue,
+  quarterlyRent,
+  halfYearlyRent,
+  yearlyRent,
   compact = false,
 }: PricingDetailsProps) {
   const tierInfo = PRICING_TIERS[tier];
+
+  // Fallbacks using standard math if props not provided
+  const finalMonthly = monthlyRent || tierInfo.monthlyRent;
+  const finalQuarterly = quarterlyRent || Math.round(finalMonthly * 0.9 * 3);
+  const finalHalfYearly = halfYearlyRent || Math.round(finalMonthly * 0.8 * 6);
+  const finalYearly = yearlyRent || Math.round(finalMonthly * 0.7 * 12);
 
   if (compact) {
     return (
       <div className="text-sm">
         <div className="flex justify-between">
           <span className="text-on-surface-variant">Monthly</span>
-          <span className="font-semibold text-primary">${Math.round(monthlyRent)}</span>
+          <span className="font-semibold text-primary">₹{Math.round(finalMonthly).toLocaleString('en-IN')}</span>
         </div>
         <div className="flex justify-between text-xs text-on-surface-variant">
           <span>Value Range</span>
           <span>
-            ${Math.round(tierInfo.valueRange.min / 1000)}K - ${Math.round(tierInfo.valueRange.max / 1000)}K
+            ₹{Math.round(tierInfo.valueRange.min).toLocaleString('en-IN')} - ₹{Math.round(tierInfo.valueRange.max).toLocaleString('en-IN')}
           </span>
         </div>
       </div>
@@ -81,30 +93,30 @@ export function PricingDetails({
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span>Monthly</span>
-            <span className="font-semibold">${Math.round(tierInfo.monthlyRent)}</span>
+            <span className="font-semibold">₹{Math.round(finalMonthly).toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between">
-            <span>Half-Yearly</span>
-            <span className="font-semibold">${Math.round(tierInfo.halfYearlyRent)}</span>
+            <span>Quarterly (3mo)</span>
+            <span className="font-semibold">₹{Math.round(finalQuarterly).toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between">
-            <span>Quarterly</span>
-            <span className="font-semibold">${Math.round(tierInfo.quarterlyRent)}</span>
+            <span>Half-Yearly (6mo)</span>
+            <span className="font-semibold">₹{Math.round(finalHalfYearly).toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between border-t pt-2">
-            <span>Yearly</span>
-            <span className="font-semibold">${Math.round(tierInfo.yearlyRent)}</span>
+            <span>Yearly (12mo)</span>
+            <span className="font-semibold">₹{Math.round(finalYearly).toLocaleString('en-IN')}</span>
           </div>
         </div>
       </div>
 
       <div className="pt-2 border-t">
         <p className="text-xs text-on-surface-variant">
-          <strong>Artwork Value:</strong> ${replacementValue.toLocaleString()}
+          <strong>Artwork Value:</strong> ₹{replacementValue.toLocaleString('en-IN')}
         </p>
         <p className="text-xs text-on-surface-variant mt-1">
-          <strong>Tier Range:</strong> ${Math.round(tierInfo.valueRange.min / 1000)}K - $
-          {Math.round(tierInfo.valueRange.max / 1000)}K
+          <strong>Tier Range:</strong> ₹{Math.round(tierInfo.valueRange.min).toLocaleString('en-IN')} - ₹
+          {Math.round(tierInfo.valueRange.max).toLocaleString('en-IN')}
         </p>
       </div>
     </div>
@@ -127,12 +139,12 @@ export function ArtworkStats({
         <p className="text-[9px] text-on-surface-variant uppercase tracking-widest mb-1">
           Monthly
         </p>
-        <p className="font-display-md text-lg text-primary">${Math.round(monthlyRent)}</p>
+        <p className="font-display-md text-lg text-primary">₹{Math.round(monthlyRent).toLocaleString('en-IN')}</p>
       </div>
       <div>
-        <p className="text-[9px] text-on-surface-variant uppercase tracking-widest mb-1">Yearly</p>
+        <p className="text-[9px] text-on-surface-variant uppercase tracking-widest mb-1">Value</p>
         <p className="font-display-md text-lg text-primary">
-          ${Math.round(tierInfo.yearlyRent / 1000)}K
+          ₹{replacementValue.toLocaleString('en-IN')}
         </p>
       </div>
       <div>

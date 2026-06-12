@@ -1,44 +1,18 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver';
-import { getArtworkImageWithWatermark } from '../services/artworkService';
 import { ArtworkTierBadge } from './ArtworkTierInfo';
-import { CollectionArtwork } from '../lib/collectionsData';
+import { CollectionArtwork, parseArtworkValueFromSize } from '../lib/collectionsData';
 
 interface ArtworkCardProps {
   artwork: CollectionArtwork;
   index?: number;
+  key?: any;
 }
 
 export default function ArtworkCard({ artwork, index = 0 }: ArtworkCardProps) {
   const navigate = useNavigate();
   const { ref, isVisible } = useIntersectionObserver({ threshold: 0.05 });
-  const [watermarkedImage, setWatermarkedImage] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!isVisible) return;
-
-    const loadWatermark = async () => {
-      try {
-        setIsLoading(true);
-        const fakeArtwork = {
-          id: artwork.id,
-          title: artwork.name,
-          localImagePath: artwork.localPath,
-        };
-        const watermarked = await getArtworkImageWithWatermark(fakeArtwork);
-        setWatermarkedImage(watermarked);
-      } catch (err) {
-        console.error(`Error watermarking ${artwork.id}:`, err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadWatermark();
-  }, [isVisible, artwork]);
 
   return (
     <motion.div
@@ -50,42 +24,41 @@ export default function ArtworkCard({ artwork, index = 0 }: ArtworkCardProps) {
       onClick={() => navigate(`/artwork/${artwork.id}`)}
     >
       <div className="relative overflow-hidden bg-subtle-smoke shadow-sm hover:shadow-xl transition-shadow duration-700">
-        {watermarkedImage ? (
-          <img
-            className="w-full h-auto object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
-            alt={artwork.name}
-            src={watermarkedImage}
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-64 bg-gradient-to-br from-subtle-smoke to-subtle-smoke/50 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-8 h-8 border-2 border-gallery-gold/30 border-t-gallery-gold rounded-full animate-spin" />
-              <p className="text-on-surface-variant text-xs text-center px-4">
-                {isLoading ? 'Loading...' : 'Preparing image...'}
-              </p>
-            </div>
-          </div>
-        )}
+        <img
+          className="w-full h-auto object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center group-hover:scale-115"
+          alt={artwork.name}
+          src={artwork.localPath}
+          loading="lazy"
+        />
+
+        {/* Tiled watermark repeating overlay - disappears on hover */}
+        <div className="watermark-tiled transition-opacity duration-500 group-hover:opacity-0" />
 
         {/* Shadow gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
 
-        {/* Golden frame effect */}
-        <div className="absolute inset-0 border-[0.15cm] border-[#cca550] shadow-[inset_0_0_20px_rgba(0,0,0,0.6)] z-20 pointer-events-none mix-blend-multiply opacity-90" />
-        <div className="absolute inset-0 border-[0.15cm] border-gallery-gold z-20 pointer-events-none shadow-[inset_0_4px_15px_rgba(0,0,0,0.5),0_10px_30px_rgba(0,0,0,0.3)] opacity-80" />
+        {/* Golden frame effect - fades out on hover */}
+        <div className="absolute inset-0 border-[0.15cm] border-[#cca550] shadow-[inset_0_0_20px_rgba(0,0,0,0.6)] z-20 pointer-events-none mix-blend-multiply opacity-90 transition-opacity duration-500 group-hover:opacity-0" />
+        <div className="absolute inset-0 border-[0.15cm] border-gallery-gold z-20 pointer-events-none shadow-[inset_0_4px_15px_rgba(0,0,0,0.5),0_10px_30px_rgba(0,0,0,0.3)] opacity-80 transition-opacity duration-500 group-hover:opacity-0" />
       </div>
 
-      <div className="mt-4 flex justify-between items-start gap-3">
-        <div className="flex flex-col flex-1 min-w-0">
-          <h3 className="font-display-md text-lg text-primary tracking-tight transition-colors duration-300 group-hover:text-gallery-gold break-words truncate">
+      <div className="mt-4 pt-3 border-t border-gallery-gold/10 flex justify-between items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display-sm text-[16px] font-semibold text-primary tracking-tight group-hover:text-gallery-gold transition-colors duration-300 truncate leading-tight">
             {artwork.name}
           </h3>
-          <p className="font-label-caps text-[9px] text-on-surface-variant uppercase tracking-[0.2em] mt-1">
-            {artwork.size}
-          </p>
+          <span className="text-[9px] font-label-caps tracking-widest text-on-surface-variant/60 uppercase block mt-1">
+            Value: ₹{parseArtworkValueFromSize(artwork.size).toLocaleString('en-IN')}
+          </span>
         </div>
-        <ArtworkTierBadge tier={artwork.tier} showLabel={true} className="text-xs flex-shrink-0" />
+        <div className="text-right flex flex-col items-end justify-center flex-shrink-0">
+          <span className="text-[10px] font-bold font-label-caps tracking-wider text-gallery-gold bg-gallery-gold/5 px-2 py-0.5 rounded border border-gallery-gold/15 shadow-[0_2px_8px_rgba(212,175,55,0.04)]">
+            ₹{Math.round(parseArtworkValueFromSize(artwork.size) * 0.012).toLocaleString('en-IN')}/mo
+          </span>
+          <span className="text-[8px] font-label-caps tracking-widest text-on-surface-variant/50 uppercase mt-0.5 block">
+            Lease
+          </span>
+        </div>
       </div>
     </motion.div>
   );
