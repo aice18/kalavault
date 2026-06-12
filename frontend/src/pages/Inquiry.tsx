@@ -12,6 +12,10 @@ export default function Inquiry() {
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
   const [message, setMessage] = useState('');
   const [interest, setInterest] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [entity, setEntity] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
 
   useEffect(() => {
     if (artworkName) {
@@ -23,10 +27,23 @@ export default function Inquiry() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFormState('submitting');
-    // Simulate network request
+    
+    // Construct mailto link to map inquiry to admin@thekalavault.com
+    const subject = encodeURIComponent(`Kala Vault Inquiry: ${interest.toUpperCase()}`);
+    const body = encodeURIComponent(
+      `Name: ${fullName}\n` +
+      `Organization: ${entity || 'N/A'}\n` +
+      `Email: ${email}\n` +
+      `Phone: ${phone || 'N/A'}\n` +
+      `Interest: ${interest}\n\n` +
+      `Message:\n${message}`
+    );
+    
+    window.location.href = `mailto:admin@thekalavault.com?subject=${subject}&body=${body}`;
+    
     setTimeout(() => {
       setFormState('success');
-    }, 1500);
+    }, 1200);
   };
 
   return (
@@ -49,7 +66,7 @@ export default function Inquiry() {
               </div>
               <h2 className="font-display-lg text-4xl mb-4 text-primary">Inquiry Received</h2>
               <p className="font-body-md text-on-surface-variant max-w-md mx-auto leading-relaxed mb-8">
-                A Kala Vault curator will review your request and contact you within 24 hours to schedule a private consultation.
+                Your inquiry has been mapped to admin@thekalavault.com. A Kala Vault curator will review your request and contact you within 24 hours to schedule a private consultation.
               </p>
               <Link to="/" className="border border-outline/20 text-primary py-4 px-8 font-label-caps text-[10px] uppercase tracking-[0.2em] transition-all hover:bg-subtle-smoke">
                  Return to Vault
@@ -75,22 +92,48 @@ export default function Inquiry() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="flex flex-col gap-2">
                     <label className="font-label-caps text-[10px] uppercase tracking-[0.2em] text-primary/60">Full Name</label>
-                    <input required type="text" className="border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors" placeholder="Jane Doe" />
+                    <input 
+                      required 
+                      type="text" 
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors" 
+                      placeholder="Jane Doe" 
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="font-label-caps text-[10px] uppercase tracking-[0.2em] text-primary/60">Corporate Entity / Organization</label>
-                    <input type="text" className="border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors" placeholder="Acme Corp" />
+                    <input 
+                      type="text" 
+                      value={entity}
+                      onChange={(e) => setEntity(e.target.value)}
+                      className="border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors" 
+                      placeholder="Acme Corp" 
+                    />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="flex flex-col gap-2">
                     <label className="font-label-caps text-[10px] uppercase tracking-[0.2em] text-primary/60">Professional Email</label>
-                    <input required type="email" className="border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors" placeholder="jane@acme.com" />
+                    <input 
+                      required 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors" 
+                      placeholder="jane@acme.com" 
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="font-label-caps text-[10px] uppercase tracking-[0.2em] text-primary/60">Phone Number (Optional)</label>
-                    <input type="tel" className="border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors" placeholder="+1 (555) 000-0000" />
+                    <input 
+                      type="tel" 
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="border-b border-outline/20 py-3 bg-transparent font-body-md text-primary outline-none focus:border-gallery-gold transition-colors" 
+                      placeholder="+1 (555) 000-0000" 
+                    />
                   </div>
                 </div>
 

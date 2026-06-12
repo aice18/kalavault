@@ -41,7 +41,7 @@ const ARTWORK_FILES = [
   { name: 'Iridescene', ext: 'jpeg', size: '35k' },
   { name: 'MysticOfSanyasi', ext: 'jpeg', size: '35k' },
   { name: 'Predator', ext: 'png', size: '35k' },
-  { name: 'Roots&Eternity', ext: 'png', size: '35k' },
+  { name: 'RootsEternity', ext: 'png', size: '35k' },
   { name: 'StructuredChaos', ext: 'jpeg', size: '35k' },
   { name: 'TriBuddha', ext: 'png', size: '35k' },
   { name: 'WhereTimeRests', ext: 'jpeg', size: '35k' },

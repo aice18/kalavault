@@ -104,9 +104,18 @@ export default function LandingPage() {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 1500], [0, 600]);
 
+  const [testimonials, setTestimonials] = useState(TESTIMONIALS_DATA);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [trustSlide, setTrustSlide] = useState(0);
   const [watermarkedImages, setWatermarkedImages] = useState<Record<number | string, string>>({});
+
+  // Feedback Form State
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackCompany, setFeedbackCompany] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(5);
+  const [feedbackQuote, setFeedbackQuote] = useState('');
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -117,10 +126,10 @@ export default function LandingPage() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTrustSlide((prev) => (prev + 1) % TESTIMONIALS_DATA.length);
+      setTrustSlide((prev) => (prev + 1) % testimonials.length);
     }, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [testimonials.length]);
 
   // Load watermarked images for featured artworks
   useEffect(() => {
@@ -294,80 +303,108 @@ export default function LandingPage() {
       {/* ── Merged Process + Method: The Journey ── */}
       <JourneySection />
 
-      { /* Trust section / Corporate proof - styled as editorial showcase with merged reviews */}
-      <motion.section
-        className="py-section-gap px-margin-mobile md:px-margin-desktop overflow-hidden bg-paper-white"
+      { /* Client Testimonials Section - Redesigned Premium Editorial Layout */ }
+      <motion.section 
+        className="py-section-gap px-margin-mobile md:px-margin-desktop bg-paper-white text-primary overflow-hidden relative border-y border-outline/5"
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
+        style={{
+          backgroundImage: 'radial-gradient(ellipse at top right, rgba(212, 175, 55, 0.02) 0%, transparent 70%)'
+        }}
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center max-w-7xl mx-auto">
-          {/* Left Column: Testimonial Installation Image */}
-          <div className="lg:col-span-5 relative">
-            <div className="aspect-[3/4] w-full overflow-hidden bg-surface-container border border-gallery-gold/20 shadow-2xl relative rounded-[2px]">
-              <AnimatePresence mode="popLayout">
-                <motion.img
-                  key={trustSlide}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  alt={`Portfolio Curation`}
-                  src={TESTIMONIALS_DATA[trustSlide].image}
-                  initial={{ opacity: 0, scale: 1.03 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 1.0, ease: "easeInOut" }}
-                />
-              </AnimatePresence>
-
-              <div className="absolute bottom-4 left-4 right-4 bg-black/70 backdrop-blur-md border border-white/10 px-3 py-2 rounded z-20 flex justify-between items-center text-[9px] tracking-widest font-label-caps text-paper-white">
-                <span className="text-paper-white/60 uppercase">PLACEMENT REVIEW 0{trustSlide + 1}</span>
-                <span className="text-gallery-gold font-bold">VERIFIED</span>
-              </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-primary/5 z-0 pointer-events-none" />
+        
+        <div className="max-w-[1440px] mx-auto relative z-10">
+          <div className="mb-16 md:mb-24 flex flex-col md:flex-row md:items-end justify-between border-b border-primary/10 pb-8">
+            <div>
+              <p className="font-label-caps text-[10px] text-gallery-gold tracking-[0.3em] uppercase mb-4">// PORTFOLIO PLACEMENTS</p>
+              <h2 className="font-headline-lg text-headline-lg text-primary leading-none">Client Reviews</h2>
+            </div>
+            <div className="mt-6 md:mt-0 font-label-caps text-[11px] text-primary/50 tracking-[0.2em] uppercase">
+              SELECT INSTALLATIONS & EXHIBITIONS
             </div>
           </div>
 
-          {/* Right Column: Editorial Corporate Curation Copy + Testimonial Quote */}
-          <div className="lg:col-span-7 space-y-10 lg:pl-8 flex flex-col justify-between min-h-[450px]">
-            <div className="space-y-6">
-              <div>
-                <span className="font-label-caps text-[10px] text-gallery-gold tracking-[0.3em] uppercase block mb-3">// CURATION EXPERIENCE</span>
-                <h2 className="font-headline-md text-3xl md:text-4xl text-primary leading-tight font-medium tracking-tight">What They're Saying</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center">
+            {/* Left Column: Framed Image Showcase */}
+            <div className="lg:col-span-5 order-2 lg:order-1">
+              <div className="border border-primary/10 p-3 bg-subtle-smoke/25 backdrop-blur-sm shadow-[0_30px_60px_-15px_rgba(0,0,0,0.06)] relative group rounded-sm max-w-md mx-auto lg:max-w-none">
+                <div className="aspect-[3/4] w-full overflow-hidden bg-subtle-smoke relative rounded-[1px] border border-primary/5">
+                  <AnimatePresence mode="popLayout">
+                    <motion.img
+                      key={trustSlide}
+                      src={testimonials[trustSlide]?.image || "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=600"}
+                      alt={`${testimonials[trustSlide]?.client} Installation`}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-[cubic-bezier(0.16,1,0.3,1)]"
+                      initial={{ opacity: 0, scale: 1.05 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.8, ease: "easeInOut" }}
+                    />
+                  </AnimatePresence>
+                  
+                  <div className="absolute bottom-5 left-5 right-5 bg-white/95 backdrop-blur-md border border-primary/10 px-4 py-3 rounded-[2px] z-20 flex justify-between items-center text-[10px] tracking-widest font-label-caps text-primary shadow-sm">
+                    <span className="text-primary/60 uppercase">CASE STUDY: 0{trustSlide + 1}</span>
+                    <span className="text-gallery-gold font-bold">VERIFIED</span>
+                  </div>
+                </div>
               </div>
-              <div className="w-12 h-[1px] bg-gallery-gold/40" />
+            </div>
 
-              {/* Dynamic Review Block */}
-              <div className="min-h-[180px] flex flex-col justify-center">
+            {/* Right Column: Editorial Testimonial Text */}
+            <div className="lg:col-span-7 order-1 lg:order-2 flex flex-col justify-between min-h-[400px]">
+              <div className="space-y-6">
+                <span className="font-label-caps text-[11px] text-gallery-gold tracking-[0.25em] uppercase block">
+                  {testimonials[trustSlide]?.project}
+                </span>
+                
+                <div className="w-16 h-px bg-gallery-gold/40 my-6" />
+
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={trustSlide}
-                    initial={{ opacity: 0, y: 15 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.4 }}
-                    className="space-y-6"
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="space-y-8"
                   >
-                    <div className="text-gallery-gold opacity-60">
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg>
-                    </div>
-                    <blockquote className="font-quote italic text-xl md:text-2xl text-on-surface-variant leading-relaxed font-light">
-                      {TESTIMONIALS_DATA[trustSlide].quote}
+                    <blockquote className="font-quote italic text-2xl md:text-3xl lg:text-4xl text-primary leading-relaxed font-light tracking-wide">
+                      {testimonials[trustSlide]?.quote}
                     </blockquote>
                   </motion.div>
                 </AnimatePresence>
               </div>
-            </div>
 
-            {/* Slider navigation line indicators */}
-            <div className="flex gap-2 pt-2">
-              {TESTIMONIALS_DATA.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setTrustSlide(index)}
-                  className="h-[2px] transition-all duration-500 cursor-pointer w-4 bg-primary/20 hover:bg-primary/40"
-                  style={{ width: trustSlide === index ? '48px' : '16px', background: trustSlide === index ? 'var(--color-gallery-gold)' : 'rgba(0,0,0,0.2)' }}
-                  aria-label={`Go to case study ${index + 1}`}
-                />
-              ))}
+              {/* Editorial bottom navigation bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-12 mt-12 border-t border-primary/10 gap-6">
+                {/* Custom Slide Number */}
+                <div className="flex items-center gap-6">
+                  <span className="font-quote italic text-2xl text-gallery-gold">
+                    0{trustSlide + 1}
+                  </span>
+                  <div className="w-12 h-px bg-primary/20" />
+                  <span className="font-quote italic text-sm text-primary/40">
+                    0{testimonials.length}
+                  </span>
+                </div>
+                {/* Dots */}
+                <div className="flex gap-2.5">
+                  {testimonials.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setTrustSlide(index)}
+                      className="h-1.5 rounded-full transition-all duration-500 cursor-pointer"
+                      style={{
+                        width: trustSlide === index ? '28px' : '6px',
+                        background: trustSlide === index ? '#D4AF37' : 'rgba(0,0,0,0.15)'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -452,13 +489,144 @@ export default function LandingPage() {
                 </motion.div>
               </AnimatePresence>
 
-              <div className="mt-8 pt-6 border-t border-primary/10 flex justify-between items-center group cursor-pointer">
-                <span className="font-label-caps text-[11px] text-primary group-hover:text-gallery-gold transition-colors uppercase">Curation Coming Soon.</span>
-                <span className="material-symbols-outlined text-sm text-primary group-hover:text-gallery-gold transition-colors group-hover:translate-x-2">arrow_forward</span>
+              <div className="mt-8 pt-6 border-t border-primary/10 flex justify-between items-center select-none text-primary/45">
+                <span className="font-label-caps text-[11px] uppercase tracking-wider">Curation Coming Soon</span>
               </div>
             </div>
           </div>
 
+        </div>
+      </motion.section>
+
+      { /* Dynamic Curation Feedback & Review Form Section */ }
+      <motion.section 
+        className="py-24 px-margin-mobile md:px-margin-desktop bg-paper-white relative overflow-hidden border-t border-outline/10"
+        variants={sectionVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(212,175,55,0.03),transparent_50%)] pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+            <span className="font-label-caps text-[10px] text-gallery-gold tracking-[0.3em] uppercase block">// SHARE YOUR EXPERIENCE</span>
+            <h2 className="font-headline-md text-3xl md:text-4xl text-primary font-medium tracking-tight">Leave a Curation Review</h2>
+            <p className="font-body-sm text-sm text-on-surface-variant leading-relaxed">
+              Have you worked with Kala Vault's curation team or experienced our collection in your space? Share your thoughts to help us keep refining our services.
+            </p>
+          </div>
+
+          <div className="bg-white border border-gallery-gold/20 p-8 md:p-12 rounded-2xl shadow-[0_30px_70px_-15px_rgba(212,175,55,0.05)] relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-gallery-gold/5 to-transparent pointer-events-none" />
+            
+            {feedbackSuccess ? (
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-center py-12 space-y-4"
+              >
+                <span className="material-symbols-outlined text-6xl text-gallery-gold animate-bounce">check_circle</span>
+                <h4 className="font-headline-md text-2xl text-primary font-medium">Review Submitted Successfully</h4>
+                <p className="font-body-sm text-sm text-on-surface-variant max-w-md mx-auto leading-relaxed">
+                   Thank you for your valuable feedback! Your submission has been registered and added to our client experiences slider.
+                </p>
+              </motion.div>
+            ) : (
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!feedbackQuote.trim()) return;
+                  const newId = testimonials.length + 1;
+                  const newReview = {
+                    id: newId,
+                    client: feedbackCompany.trim() || "Private Collector",
+                    quote: `“${feedbackQuote.trim()}”`,
+                    image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=120",
+                    location: feedbackName.trim() || "Anonymous Partner",
+                    project: `${feedbackRating} Star Curation`
+                  };
+                  setTestimonials(prev => [...prev, newReview]);
+                  setTrustSlide(testimonials.length); // Switch slide focus immediately to the new testimonial
+                  setFeedbackSuccess(true);
+                  setFeedbackName('');
+                  setFeedbackCompany('');
+                  setFeedbackQuote('');
+                  setTimeout(() => setFeedbackSuccess(false), 5000);
+                }}
+                className="space-y-6"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-2">
+                    <label className="font-label-caps text-[9px] uppercase tracking-[0.2em] text-primary/60 font-semibold">Your Name / Location</label>
+                    <input 
+                      type="text" 
+                      value={feedbackName} 
+                      onChange={(e) => setFeedbackName(e.target.value)} 
+                      placeholder="Rahul Sharma, Delhi" 
+                      className="bg-subtle-smoke/30 border border-gallery-gold/20 focus:border-gallery-gold focus:outline-none px-4 py-3 text-[13px] text-primary rounded-md transition-all placeholder:text-primary/30"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="font-label-caps text-[9px] uppercase tracking-[0.2em] text-primary/60 font-semibold">Company / Project Area</label>
+                    <input 
+                      type="text" 
+                      value={feedbackCompany} 
+                      onChange={(e) => setFeedbackCompany(e.target.value)} 
+                      placeholder="ITC Maurya Lobby or Corporate HQ" 
+                      className="bg-subtle-smoke/30 border border-gallery-gold/20 focus:border-gallery-gold focus:outline-none px-4 py-3 text-[13px] text-primary rounded-md transition-all placeholder:text-primary/30"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="font-label-caps text-[9px] uppercase tracking-[0.2em] text-primary/60 font-semibold">Rating</label>
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setFeedbackRating(star)}
+                        className="focus:outline-none transition-all duration-300 transform hover:scale-110"
+                      >
+                        <span 
+                          className={`material-symbols-outlined text-[24px] cursor-pointer ${
+                            star <= feedbackRating ? 'text-gallery-gold fill-1' : 'text-primary/25'
+                          }`}
+                          style={{ fontVariationSettings: star <= feedbackRating ? "'FILL' 1" : "'FILL' 0" }}
+                        >
+                          star
+                        </span>
+                      </button>
+                    ))}
+                    <span className="font-mono text-xs text-primary/50 ml-3">({feedbackRating} / 5 stars)</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="font-label-caps text-[9px] uppercase tracking-[0.2em] text-primary/60 font-semibold">Your Review</label>
+                  <textarea 
+                    value={feedbackQuote} 
+                    onChange={(e) => setFeedbackQuote(e.target.value)} 
+                    placeholder="Describe your experience collaborating with our curators, the quality of our artwork, or how the subscription rotation has influenced your space..." 
+                    className="bg-subtle-smoke/30 border border-gallery-gold/20 focus:border-gallery-gold focus:outline-none px-4 py-3 text-[13px] text-primary rounded-md h-32 resize-none transition-all placeholder:text-primary/30 leading-relaxed"
+                    required
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button 
+                    type="submit" 
+                    className="w-full py-4 bg-primary border border-primary text-white hover:bg-gallery-gold hover:border-gallery-gold font-label-caps text-[10px] uppercase tracking-[0.25em] font-semibold transition-all duration-300 focus:outline-none rounded-md shadow-lg shadow-primary/10 hover:shadow-gallery-gold/20"
+                  >
+                    Submit Curation Review
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       </motion.section>
 

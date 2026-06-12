@@ -106,51 +106,6 @@ export default function Services() {
           </div>
         </section>
 
-        <section className="px-8 md:px-16 max-w-[1600px] mx-auto mt-32 mb-32 pt-24 border-t border-gallery-gold/20 relative">
-          <div className="w-full absolute top-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-gallery-gold/50 to-transparent opacity-80"></div>
-
-          <div className="flex flex-col mb-24 text-center items-center">
-            <span className="font-label-caps text-[10px] uppercase tracking-[0.4em] text-gallery-gold mb-6 block">Spatial Alignment</span>
-            <h2 className="font-display-lg text-5xl md:text-6xl text-primary tracking-tight mb-8">Executive-Tier Portfolio</h2>
-            <p className="font-headline-md italic text-on-surface-variant text-2xl md:text-3xl max-w-2xl font-light">
-              Size-Wise Options for Premium Architectural Spaces
-            </p>
-          </div>
-
-          <div className="flex flex-col border-b border-gallery-gold/20">
-            {[
-              { title: "Executive Format", size: '36"×36"', desc: "Optimized for private leadership suites and collaborative pods." },
-              { title: "Gallery Portfolio", size: '48"×36"', desc: "Designed for high-visibility hallways and conference rooms." },
-              { title: "Premium Statement", size: '48"×48"', desc: "Square-format centerpiece for modern lobbies or open-plan lounges." },
-              { title: "Lumina Grand XL", size: '72"×48"', desc: "Dramatic, large-scale works for main reception areas and grand foyers." },
-              { title: "Architectural Scale", size: "8 ft+", desc: "Bespoke, floor-to-ceiling installations for signature corporate walls." }
-            ].map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: idx * 0.1 }}
-                className="flex flex-col md:flex-row justify-between items-start md:items-center py-10 md:py-16 border-t border-gallery-gold/20 bg-transparent group hover:bg-subtle-smoke transition-colors duration-500 px-8 lg:px-16 mx-[-2rem] lg:mx-[-4rem]"
-              >
-                <div className="flex items-center gap-8 md:gap-16 md:w-1/2">
-                  <span className="font-label-caps text-xs tracking-widest text-gallery-gold uppercase hidden md:block w-8">00{idx + 1}</span>
-                  <h3 className="font-display-lg text-3xl md:text-4xl text-primary group-hover:translate-x-4 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] tracking-tight">
-                    {item.title}
-                  </h3>
-                </div>
-                <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-1/2 mt-6 md:mt-0 gap-8 md:gap-12 md:pl-8">
-                  <p className="font-body-lg text-lg text-on-surface-variant font-light group-hover:text-primary transition-colors duration-500 flex-grow">
-                    {item.desc}
-                  </p>
-                  <div className="font-display-lg text-2xl md:text-3xl text-gallery-gold font-light whitespace-nowrap pt-2 md:pt-0">
-                    {item.size}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
 
         <section className="px-8 md:px-16 max-w-[1600px] mx-auto mt-32 mb-16 relative">
           <motion.div

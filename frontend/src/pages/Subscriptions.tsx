@@ -45,187 +45,229 @@ export default function Subscriptions() {
           <div className="absolute bottom-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gallery-gold/50 to-transparent"></div>
         </section>
 
-        <section id="core-suites" className="px-8 md:px-16 max-w-[1600px] mx-auto scroll-mt-32">
-          <div className="flex flex-col mb-24 text-center items-center">
-            <span className="font-label-caps text-[10px] uppercase tracking-[0.4em] text-gallery-gold mb-6 block">Section I</span>
-            <h2 className="font-display-lg text-5xl md:text-6xl text-primary tracking-tight mb-8">Subscription Packages</h2>
-          </div>
-          {/* Subscriptions Grid / List (Editorial) */}
-          <div className="flex flex-col lg:flex-row gap-8 md:gap-8 mb-32 max-w-7xl mx-auto justify-center items-stretch">
-             
-             {/* The Standard Collection */}
-             <motion.div 
-               initial={{ opacity: 0, y: 40 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true, margin: "-100px" }}
-               transition={{ duration: 0.8 }}
-               className="flex flex-col group relative overflow-hidden w-full lg:w-1/3 border border-gallery-gold/20 shadow-[0_20px_60px_-15px_rgba(212,175,55,0.06)] bg-white"
-             >
-                 <div className="p-8 md:p-10 flex flex-col flex-grow bg-white hover:bg-subtle-smoke transition-colors duration-700 relative">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-gallery-gold/5 to-transparent pointer-events-none" />
-                    
-                    <span className="font-label-caps text-[11px] uppercase tracking-[0.4em] text-primary/40 group-hover:text-gallery-gold transition-colors duration-500 mb-6 block font-semibold">Standard Tier</span>
-                    <h3 className="font-display-lg text-3xl md:text-4xl text-primary mb-6 tracking-tight">The Standard Collection</h3>
-                    
-                    <div className="font-body-md text-primary pb-8 border-b border-gallery-gold/20 group-hover:border-gallery-gold/40 transition-colors duration-500 mb-8 flex flex-col">
-                       <span className="font-display-lg text-4xl font-light tracking-tighter">₹79,999</span> 
-                       <span className="text-on-surface-variant font-label-caps text-[10px] tracking-widest mt-2 uppercase">/ Subscription</span>
-                    </div>
-                    
-                    <p className="font-body-sm text-on-surface-variant leading-relaxed mb-8 font-light min-h-[70px]">
-                       A ready-to-start boutique package featuring hand-picked art pieces tailored to refresh your lobby, café, or small office space.
-                    </p>
-                    
-                    <ul className="space-y-3 font-body-sm text-[13px] text-on-surface-variant mb-10 list-none pl-0">
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> 10–12 Artworks per year</li>
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> 2x Swaps per year</li>
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Small & Medium sizes</li>
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Canvas & Fine Art Prints</li>
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Delivery within 5–7 days</li>
-                    </ul>
-                    
-                    <Link to="/inquire" className="mt-auto flex items-center justify-center gap-4 py-4 px-8 font-label-caps text-[11px] uppercase tracking-[0.2em] transition-all bg-primary border border-primary hover:bg-gallery-gold hover:border-gallery-gold text-white focus:outline-none w-full group/btn">
-                        <span>Select Standard</span>
+         <section id="core-suites" className="px-8 md:px-16 max-w-[1600px] mx-auto scroll-mt-32 relative">
+           {/* Subtle background ambient elements */}
+           <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(212,175,55,0.03)_0%,transparent_70%)] pointer-events-none" />
+           <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(212,175,55,0.02)_0%,transparent_70%)] pointer-events-none" />
+           
+           <div className="flex flex-col mb-24 text-center items-center">
+             <span className="font-label-caps text-[10px] uppercase tracking-[0.4em] text-gallery-gold mb-6 block">Section I</span>
+             <h2 className="font-display-lg text-5xl md:text-6xl text-primary tracking-tight mb-8">Subscription Packages</h2>
+           </div>
+           
+           {/* Subscriptions Grid / List (Editorial) */}
+           <div className="flex flex-col lg:flex-row gap-8 md:gap-8 mb-32 max-w-7xl mx-auto justify-center items-stretch relative z-10">
+              
+              {/* The Standard Collection */}
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8 }}
+                className="flex flex-col group relative overflow-hidden w-full lg:w-1/3 border border-gallery-gold/20 shadow-[0_20px_60px_-15px_rgba(212,175,55,0.06)] bg-white transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_80px_-15px_rgba(212,175,55,0.15)] hover:border-gallery-gold/40 rounded-lg"
+              >
+                  <div className="p-8 md:p-10 flex flex-col flex-grow bg-white hover:bg-subtle-smoke/40 transition-colors duration-700 relative">
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gallery-gold/5 to-transparent pointer-events-none" />
+                     
+                     {/* Premium Emblem Graphic */}
+                     <div className="w-14 h-14 rounded-full border border-gallery-gold/20 flex items-center justify-center mb-8 bg-subtle-smoke/50 group-hover:border-gallery-gold/50 group-hover:bg-gallery-gold/10 group-hover:rotate-6 transition-all duration-500">
+                        <span className="material-symbols-outlined text-gallery-gold text-[24px]">crop_original</span>
+                     </div>
+
+                     <span className="font-label-caps text-[11px] uppercase tracking-[0.4em] text-primary/40 group-hover:text-gallery-gold transition-colors duration-500 mb-2 block font-semibold">Standard Tier</span>
+                     <h3 className="font-display-lg text-3xl md:text-4xl text-primary mb-6 tracking-tight">The Standard Collection</h3>
+                     
+                     <div className="font-body-md text-primary pb-8 border-b border-gallery-gold/20 group-hover:border-gallery-gold/40 transition-colors duration-500 mb-8 flex flex-col">
+                        <span className="font-display-lg text-4xl font-light tracking-tighter text-primary group-hover:text-gallery-gold transition-colors duration-500">₹79,999</span> 
+                        <span className="text-on-surface-variant font-label-caps text-[10px] tracking-widest mt-2 uppercase">/ Subscription</span>
+                     </div>
+                     
+                     <p className="font-body-sm text-on-surface-variant leading-relaxed mb-8 font-light min-h-[70px]">
+                        A ready-to-start boutique package featuring hand-picked art pieces tailored to refresh your lobby, café, or small office space.
+                     </p>
+                     
+                     <ul className="space-y-3 font-body-sm text-[13px] text-on-surface-variant mb-10 list-none pl-0">
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Minimum 20 Artworks</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> 2x Swaps per year</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Small & Medium sizes</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Canvas & Fine Art Prints</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Delivery within 5–7 days</li>
+                     </ul>
+                     
+                     <Link to="/inquire" className="mt-auto flex items-center justify-center gap-4 py-4 px-8 font-label-caps text-[11px] uppercase tracking-[0.2em] transition-all bg-primary border border-primary hover:bg-gallery-gold hover:border-gallery-gold text-white focus:outline-none w-full group/btn rounded-sm">
+                         <span>Select Standard</span>
+                         <span className="material-symbols-outlined text-[14px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                     </Link>
+                  </div>
+              </motion.div>
+
+              {/* The Premium Collection */}
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                className="flex flex-col group relative overflow-hidden w-full lg:w-1/3 border border-gallery-gold/20 shadow-[0_20px_60px_-15px_rgba(212,175,55,0.06)] bg-white transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_80px_-15px_rgba(212,175,55,0.15)] hover:border-gallery-gold/40 rounded-lg"
+              >
+                  <div className="p-8 md:p-10 flex flex-col flex-grow bg-white hover:bg-subtle-smoke/40 transition-colors duration-700 relative">
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gallery-gold/5 to-transparent pointer-events-none" />
+                     
+                     {/* Premium Emblem Graphic */}
+                     <div className="w-14 h-14 rounded-full border border-gallery-gold/20 flex items-center justify-center mb-8 bg-subtle-smoke/50 group-hover:border-gallery-gold/50 group-hover:bg-gallery-gold/10 group-hover:rotate-6 transition-all duration-500">
+                        <span className="material-symbols-outlined text-gallery-gold text-[24px]">photo_library</span>
+                     </div>
+
+                     <span className="font-label-caps text-[11px] uppercase tracking-[0.4em] text-primary/40 group-hover:text-gallery-gold transition-colors duration-500 mb-2 block font-semibold">Flagship Premium</span>
+                     <h3 className="font-display-lg text-3xl md:text-4xl text-primary mb-6 tracking-tight">The Premium Collection</h3>
+                     
+                     <div className="font-body-md text-primary pb-8 border-b border-gallery-gold/20 group-hover:border-gallery-gold/40 transition-colors duration-500 mb-8 flex flex-col">
+                        <span className="font-display-lg text-4xl font-light tracking-tighter text-primary group-hover:text-gallery-gold transition-colors duration-500">₹1,59,999</span> 
+                        <span className="text-on-surface-variant font-label-caps text-[10px] tracking-widest mt-2 uppercase">/ Subscription</span>
+                     </div>
+                     
+                     <p className="font-body-sm text-on-surface-variant leading-relaxed mb-8 font-light min-h-[70px]">
+                        Designed for mid-sized enterprises and luxury hospitality settings that demand a complete, statement-making artistic makeover.
+                     </p>
+                     
+                     <ul className="space-y-3 font-body-sm text-[13px] text-on-surface-variant mb-10 list-none pl-0">
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Minimum 50 Artworks</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> 3x Swaps per year</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Medium & Large sizes</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Originals & Sculptures</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Dedicated Curator Support</li>
+                     </ul>
+                     
+                     <Link to="/inquire" className="mt-auto flex items-center justify-center gap-4 py-4 px-8 font-label-caps text-[11px] uppercase tracking-[0.2em] transition-all bg-primary border border-primary hover:bg-gallery-gold hover:border-gallery-gold text-white focus:outline-none w-full group/btn rounded-sm">
+                         <span>Select Premium</span>
+                         <span className="material-symbols-outlined text-[14px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                     </Link>
+                  </div>
+              </motion.div>
+
+              {/* Signature Experience */}
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex flex-col group relative overflow-hidden w-full lg:w-1/3 border border-gallery-gold/20 shadow-[0_20px_60px_-15px_rgba(212,175,55,0.06)] bg-white transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_80px_-15px_rgba(212,175,55,0.15)] hover:border-gallery-gold/40 rounded-lg"
+              >
+                  <div className="p-8 md:p-10 flex flex-col flex-grow bg-white hover:bg-subtle-smoke/40 transition-colors duration-700 relative">
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none" />
+                     
+                     {/* Premium Emblem Graphic */}
+                     <div className="w-14 h-14 rounded-full border border-gallery-gold/20 flex items-center justify-center mb-8 bg-subtle-smoke/50 group-hover:border-gallery-gold/50 group-hover:bg-gallery-gold/10 group-hover:rotate-6 transition-all duration-500">
+                        <span className="material-symbols-outlined text-gallery-gold text-[24px]">spatial_tracking</span>
+                     </div>
+
+                     <span className="font-label-caps text-[11px] uppercase tracking-[0.4em] text-primary/40 group-hover:text-primary transition-colors duration-500 mb-2 block font-semibold">Custom Tier</span>
+                     <h3 className="font-display-lg text-3xl md:text-4xl text-primary mb-6 tracking-tight">Signature Experience</h3>
+                     
+                     <div className="font-body-md text-primary pb-8 border-b border-primary/10 group-hover:border-primary/20 transition-colors duration-500 mb-8 flex flex-col">
+                        <span className="font-display-lg text-4xl font-light tracking-tighter text-primary group-hover:text-gallery-gold transition-colors duration-500">Custom Pricing</span> 
+                        <span className="text-on-surface-variant font-label-caps text-[10px] tracking-widest mt-2 uppercase">Bespoke Scaling</span>
+                     </div>
+                     
+                     <p className="font-body-sm text-on-surface-variant leading-relaxed mb-8 font-light min-h-[70px]">
+                        For large-scale projects, institutions, and multi-location networks. A custom-curated signature art experience designed to match your brand narrative.
+                     </p>
+                     
+                     <ul className="space-y-3 font-body-sm text-[13px] text-on-surface-variant mb-10 list-none pl-0">
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> On-demand Artworks</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Custom swaps as needed</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Bespoke & Architectural sizes</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> Murals, Sculptures & Commissions</li>
+                        <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check_circle</span> 24/7 Priority Curator Support</li>
+                     </ul>
+                     
+                     <Link to="/inquire" className="mt-auto flex items-center justify-center gap-4 py-4 px-8 font-label-caps text-[11px] uppercase tracking-[0.2em] transition-all bg-primary border border-primary hover:bg-gallery-gold hover:border-gallery-gold text-white focus:outline-none w-full group/btn rounded-sm">
+                        <span>Inquire Signature</span>
                         <span className="material-symbols-outlined text-[14px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
-                    </Link>
-                 </div>
-             </motion.div>
+                     </Link>
+                  </div>
+              </motion.div>
+           </div>
 
-             {/* The Premium Collection (Featured Flagship Tier) */}
-             <motion.div 
-               initial={{ opacity: 0, y: 40 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true, margin: "-100px" }}
-               transition={{ duration: 0.8, delay: 0.1 }}
-               className="flex flex-col group relative overflow-hidden w-full lg:w-1/3 border border-gallery-gold/50 shadow-2xl bg-primary"
-             >
-                 <div className="p-8 md:p-10 flex flex-col flex-grow bg-primary text-white transition-colors duration-700 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gallery-gold/5 opacity-5 mix-blend-overlay pointer-events-none"></div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gallery-gold/20 to-transparent pointer-events-none" />
-                    
-                    <div className="relative z-10 flex flex-col h-full">
-                       <span className="font-label-caps text-[11px] uppercase tracking-[0.4em] text-gallery-gold mb-6 block font-semibold flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 border border-gallery-gold rotate-45 inline-block bg-gallery-gold animate-pulse"></span>
-                          Flagship Premium
-                       </span>
-                       <h3 className="font-display-lg text-3xl md:text-4xl text-white mb-6 tracking-tight">The Premium Collection</h3>
-                       
-                       <div className="font-body-md text-white pb-8 border-b border-gallery-gold/30 mb-8 flex flex-col">
-                          <span className="font-display-lg text-4xl text-gallery-gold font-light tracking-tighter">₹1,59,999</span> 
-                          <span className="text-white/60 font-label-caps text-[10px] tracking-widest mt-2 uppercase">/ Subscription</span>
-                       </div>
-                       
-                       <p className="font-body-sm text-white/80 leading-relaxed mb-8 font-light min-h-[70px]">
-                          Designed for mid-sized enterprises and luxury hospitality settings that demand a complete, statement-making artistic makeover.
-                       </p>
-                       
-                       <ul className="space-y-3 font-body-sm text-[13px] text-white/70 mb-10 list-none pl-0">
-                          <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> 15–20 Artworks per year</li>
-                          <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> 3x Swaps per year</li>
-                          <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Medium & Large sizes</li>
-                          <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Originals & Sculptures</li>
-                          <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Dedicated Curator Support</li>
-                       </ul>
-                       
-                       <Link to="/inquire" className="mt-auto flex items-center justify-center gap-4 bg-gallery-gold border border-gallery-gold py-4 px-8 font-label-caps text-[11px] uppercase tracking-[0.2em] transition-all hover:bg-white hover:border-white text-primary w-full group/btn relative overflow-hidden focus:outline-none">
-                           <span className="relative z-10">Select Premium</span>
-                           <span className="relative z-10 material-symbols-outlined text-[14px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
-                       </Link>
-                    </div>
-                 </div>
-             </motion.div>
-
-             {/* The Enterprise Collection */}
-             <motion.div 
-               initial={{ opacity: 0, y: 40 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true, margin: "-100px" }}
-               transition={{ duration: 0.8, delay: 0.2 }}
-               className="flex flex-col group relative overflow-hidden w-full lg:w-1/3 border border-primary/20 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.04)] bg-white"
-             >
-                 <div className="p-8 md:p-10 flex flex-col flex-grow bg-white hover:bg-subtle-smoke transition-colors duration-700 relative">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none" />
-                    
-                    <span className="font-label-caps text-[11px] uppercase tracking-[0.4em] text-primary/40 group-hover:text-primary transition-colors duration-500 mb-6 block font-semibold">Custom Tier</span>
-                    <h3 className="font-display-lg text-3xl md:text-4xl text-primary mb-6 tracking-tight">The Enterprise Collection</h3>
-                    
-                    <div className="font-body-md text-primary pb-8 border-b border-primary/10 group-hover:border-primary/20 transition-colors duration-500 mb-8 flex flex-col">
-                       <span className="font-display-lg text-4xl font-light tracking-tighter">Custom Pricing</span> 
-                       <span className="text-on-surface-variant font-label-caps text-[10px] tracking-widest mt-2 uppercase">Bespoke Scaling</span>
-                    </div>
-                    
-                    <p className="font-body-sm text-on-surface-variant leading-relaxed mb-8 font-light min-h-[70px]">
-                       For large-scale projects, institutions, and multi-location networks. A custom-curated signature art experience designed to match your brand narrative.
-                    </p>
-                    
-                    <ul className="space-y-3 font-body-sm text-[13px] text-on-surface-variant mb-10 list-none pl-0">
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Unlimited Artworks</li>
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Custom swaps as needed</li>
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Bespoke & Architectural sizes</li>
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> Murals, Sculptures & Commissions</li>
-                       <li className="flex items-center gap-2"><span className="material-symbols-outlined text-[16px] text-gallery-gold">check</span> 24/7 Priority Curator Support</li>
-                    </ul>
-                    
-                    <Link to="/inquire" className="mt-auto flex items-center justify-center gap-4 py-4 px-8 font-label-caps text-[11px] uppercase tracking-[0.2em] transition-all bg-white border border-primary hover:bg-primary hover:text-white text-primary focus:outline-none w-full group/btn">
-                        <span>Inquire Enterprise</span>
-                        <span className="material-symbols-outlined text-[14px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
-                    </Link>
-                 </div>
-             </motion.div>
-          </div>
-
-          {/* Feature Comparison Table */}
-          <div className="max-w-5xl mx-auto w-full mb-32 border border-gallery-gold/20 bg-white shadow-sm overflow-hidden">
-             <div className="grid grid-cols-4 font-label-caps text-[10px] uppercase tracking-[0.2em] text-primary/60 border-b border-gallery-gold/20 bg-subtle-smoke">
-                <div className="p-6 md:p-8 font-semibold text-primary">Capabilities</div>
-                <div className="p-6 md:p-8 text-center border-l border-gallery-gold/20 font-semibold text-on-surface-variant">Standard</div>
-                <div className="p-6 md:p-8 text-center border-l border-gallery-gold/20 font-semibold text-gallery-gold">Premium</div>
-                <div className="p-6 md:p-8 text-center border-l border-gallery-gold/20 font-semibold text-primary">Enterprise</div>
-             </div>
-             
-             <div className="grid grid-cols-4 divide-x divide-gallery-gold/20 border-b border-gallery-gold/10 font-body-sm text-[13px] md:text-[14px] hover:bg-subtle-smoke/50 transition-colors">
-                <div className="p-6 md:p-8 flex items-center text-primary font-medium">Collection Size</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant">10–12 artworks/yr</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-primary bg-primary/5 font-medium">15–20 artworks/yr</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant font-medium">Unlimited / Custom</div>
-             </div>
-             
-             <div className="grid grid-cols-4 divide-x divide-gallery-gold/20 border-b border-gallery-gold/10 font-body-sm text-[13px] md:text-[14px] hover:bg-subtle-smoke/50 transition-colors">
-                <div className="p-6 md:p-8 flex items-center text-primary font-medium">Rotations & Swaps</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant">2x swaps / year</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-primary bg-primary/5 font-medium">3x swaps / year</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant font-medium">Custom / On-demand</div>
-             </div>
-
-             <div className="grid grid-cols-4 divide-x divide-gallery-gold/20 border-b border-gallery-gold/10 font-body-sm text-[13px] md:text-[14px] hover:bg-subtle-smoke/50 transition-colors">
-                <div className="p-6 md:p-8 flex items-center text-primary font-medium">Art Mediums</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant">Prints & Photographs</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-primary bg-primary/5 font-medium">Originals & Prints</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant font-medium">Bespoke & Murals</div>
-             </div>
-
-             <div className="grid grid-cols-4 divide-x divide-gallery-gold/20 border-b border-gallery-gold/10 font-body-sm text-[13px] md:text-[14px] hover:bg-subtle-smoke/50 transition-colors">
-                <div className="p-6 md:p-8 flex items-center text-primary font-medium">Curation Guidance</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant">Self / Guided Checklist</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-primary bg-primary/5 font-medium">Dedicated Curator</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant font-medium">Chief Curator & 24/7 Support</div>
-             </div>
-
-             <div className="grid grid-cols-4 divide-x divide-gallery-gold/20 border-b border-gallery-gold/10 font-body-sm text-[13px] md:text-[14px] hover:bg-subtle-smoke/50 transition-colors">
-                <div className="p-6 md:p-8 flex items-center text-primary font-medium">Insurance & Upkeep</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-gallery-gold"><span className="material-symbols-outlined text-[18px]">check</span></div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-gallery-gold bg-primary/5"><span className="material-symbols-outlined text-[18px]">check</span></div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-gallery-gold"><span className="material-symbols-outlined text-[18px]">check</span></div>
-             </div>
-
-             <div className="grid grid-cols-4 divide-x divide-gallery-gold/20 font-body-sm text-[13px] md:text-[14px] hover:bg-subtle-smoke/50 transition-colors">
-                <div className="p-6 md:p-8 flex items-center text-primary font-medium">Delivery Timeline</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant">5–7 business days</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-primary bg-primary/5 font-medium">10–12 business days</div>
-                <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant font-medium">Bespoke / Custom Timeline</div>
-             </div>
-          </div>
-        </section>
+           {/* Detailed Table Section Header */}
+           <div className="flex flex-col mt-40 mb-16 text-center items-center relative z-10">
+             <div className="h-px w-12 bg-gallery-gold/30 mb-6" />
+             <span className="font-label-caps text-[10px] uppercase tracking-[0.4em] text-gallery-gold mb-4 block">Detailed Capabilities</span>
+             <h3 className="font-display-lg text-4xl md:text-5xl text-primary tracking-tight">Feature Comparison</h3>
+           </div>
+ 
+           {/* Premium Editorial Feature Comparison Table */}
+           <div className="max-w-5xl mx-auto w-full mb-32 border border-gallery-gold/30 bg-white shadow-[0_30px_70px_rgba(212,175,55,0.03)] rounded-lg overflow-hidden relative z-10">
+              <div className="grid grid-cols-4 font-label-caps text-[10px] uppercase tracking-[0.25em] text-primary/60 border-b border-gallery-gold/20 bg-subtle-smoke/60">
+                 <div className="p-6 md:p-8 font-semibold text-primary">Capabilities</div>
+                 <div className="p-6 md:p-8 text-center border-l border-gallery-gold/15 font-semibold text-on-surface-variant">Standard</div>
+                 <div className="p-6 md:p-8 text-center border-l border-gallery-gold/15 font-semibold text-gallery-gold">Premium</div>
+                 <div className="p-6 md:p-8 text-center border-l border-gallery-gold/15 font-semibold text-primary">Signature</div>
+              </div>
+              
+              {[
+                {
+                  label: "Collection Size",
+                  standard: "Min. 20 Artworks",
+                  premium: "Min. 50 Artworks",
+                  signature: "On-demand"
+                },
+                {
+                  label: "Rotations & Swaps",
+                  standard: "2x swaps / year",
+                  premium: "3x swaps / year",
+                  signature: "Custom / On-demand"
+                },
+                {
+                  label: "Art Mediums",
+                  standard: "Prints & Photographs",
+                  premium: "Originals & Prints",
+                  signature: "Bespoke & Murals"
+                },
+                {
+                  label: "Curation Guidance",
+                  standard: "Self / Guided Checklist",
+                  premium: "Dedicated Curator",
+                  signature: "Chief Curator & 24/7 Support"
+                },
+                {
+                  label: "Insurance & Upkeep",
+                  standard: "check",
+                  premium: "check",
+                  signature: "check"
+                },
+                {
+                  label: "Delivery Timeline",
+                  standard: "5–7 business days",
+                  premium: "10–12 business days",
+                  signature: "Bespoke / Custom"
+                }
+              ].map((row, idx) => (
+                <div 
+                  key={idx} 
+                  className={`grid grid-cols-4 divide-x divide-gallery-gold/10 font-body-sm text-[13px] md:text-[14px] transition-all duration-300 hover:bg-gallery-gold/5/5 hover:scale-[1.005] hover:shadow-[0_4px_20px_rgba(212,175,55,0.02)] ${
+                    idx === 5 ? "" : "border-b border-gallery-gold/10"
+                  }`}
+                >
+                   <div className="p-6 md:p-8 flex items-center text-primary font-medium">{row.label}</div>
+                   <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant">
+                     {row.standard === "check" ? (
+                       <span className="material-symbols-outlined text-[20px] text-gallery-gold animate-pulse">check_circle</span>
+                     ) : row.standard}
+                   </div>
+                   <div className="p-6 md:p-8 text-center flex items-center justify-center text-primary bg-primary/[0.01] font-medium">
+                     {row.premium === "check" ? (
+                       <span className="material-symbols-outlined text-[20px] text-gallery-gold animate-pulse">check_circle</span>
+                     ) : row.premium}
+                   </div>
+                   <div className="p-6 md:p-8 text-center flex items-center justify-center text-on-surface-variant font-medium">
+                     {row.signature === "check" ? (
+                       <span className="material-symbols-outlined text-[20px] text-gallery-gold animate-pulse">check_circle</span>
+                     ) : row.signature}
+                   </div>
+                </div>
+              ))}
+           </div>
+         </section>
 
         <section id="scale-portfolios" className="px-8 md:px-16 max-w-[1600px] mx-auto pb-32 scroll-mt-32">
           

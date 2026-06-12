@@ -72,6 +72,10 @@ export default function ArtworkDetail() {
   const [purchaseMode, setPurchaseMode] = useState<'monthly' | 'full'>('monthly');
   const [selectedMonths, setSelectedMonths] = useState<3 | 6 | 9 | 12>(3);
 
+  // Hover Zoom State
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const [isZoomed, setIsZoomed] = useState(false);
+
   // Lock body scroll when immersive room mode is active
   useEffect(() => {
     if (isImmersive) {
@@ -242,24 +246,41 @@ export default function ArtworkDetail() {
           </div>
 
           {/* Viewer Container */}
-          <div className="w-full h-full flex items-center justify-center max-w-4xl max-h-[70vh] aspect-[16/10] relative rounded border border-outline/5 overflow-hidden shadow-2xl bg-white">
+          <div className="w-full h-full flex items-center justify-center max-w-4xl max-h-[70vh] relative select-none">
             {!isInsitu ? (
-              <div className="relative w-full h-full flex items-center justify-center p-6 md:p-12 group">
-                <img
-                  src={artwork.localPath}
-                  alt={artwork.name}
-                  className="max-w-full max-h-full object-contain transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center group-hover:scale-105"
-                />
-
+              <div 
+                className="relative max-w-full max-h-[70vh] flex items-center justify-center group cursor-zoom-in shadow-2xl rounded overflow-hidden border border-outline/5 bg-white"
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = ((e.clientX - rect.left) / rect.width) * 100;
+                  const y = ((e.clientY - rect.top) / rect.height) * 100;
+                  setZoomPos({ x, y });
+                }}
+                onMouseEnter={() => setIsZoomed(true)}
+                onMouseLeave={() => setIsZoomed(false)}
+              >
+                {/* Crop white whitespace via default scale-1.15 and object-cover */}
+                <div className="overflow-hidden flex items-center justify-center relative max-h-[70vh]">
+                  <img
+                    src={artwork.localPath}
+                    alt={artwork.name}
+                    className="max-h-[70vh] w-auto h-auto object-contain transition-transform duration-150 ease-out"
+                    style={{
+                      transformOrigin: isZoomed ? `${zoomPos.x}% ${zoomPos.y}%` : 'center',
+                      transform: isZoomed ? 'scale(2.2)' : 'scale(1.15)', // default scale to crop whitespace
+                    }}
+                  />
+                </div>
+ 
                 {/* Tiled watermark repeating overlay - disappears on hover */}
-                <div className="watermark-tiled transition-opacity duration-500 group-hover:opacity-0" />
-
+                <div className={`watermark-tiled transition-opacity duration-500 ${isZoomed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} />
+ 
                 {/* Golden Frame - fades out on hover */}
-                <div className="absolute inset-0 border-[0.15cm] border-[#cca550] shadow-[inset_0_0_25px_rgba(0,0,0,0.5)] z-20 pointer-events-none mix-blend-multiply opacity-90 transition-opacity duration-500 group-hover:opacity-0" />
-                <div className="absolute inset-0 border-[0.15cm] border-gallery-gold z-20 pointer-events-none shadow-[inset_0_4px_15px_rgba(0,0,0,0.4),0_10px_30px_rgba(0,0,0,0.2)] opacity-80 transition-opacity duration-500 group-hover:opacity-0" />
+                <div className={`absolute inset-0 border-[0.15cm] border-[#cca550] shadow-[inset_0_0_25px_rgba(0,0,0,0.5)] z-20 pointer-events-none mix-blend-multiply opacity-90 transition-opacity duration-500 ${isZoomed ? 'opacity-0' : 'opacity-100'}`} />
+                <div className={`absolute inset-0 border-[0.15cm] border-gallery-gold z-20 pointer-events-none shadow-[inset_0_4px_15px_rgba(0,0,0,0.4),0_10px_30px_rgba(0,0,0,0.2)] opacity-80 transition-opacity duration-500 ${isZoomed ? 'opacity-0' : 'opacity-100'}`} />
               </div>
             ) : (
-              <div id="insitu-container" className="relative w-full h-full overflow-hidden">
+              <div id="insitu-container" className="relative w-full h-full aspect-[16/10] overflow-hidden rounded border border-outline/5 shadow-2xl bg-white">
                 {/* Environment Room Background */}
                 <img 
                   src={ENVS[activeEnv].url} 
@@ -291,7 +312,7 @@ export default function ArtworkDetail() {
                   <div className="absolute inset-0 border-[0.05cm] border-[#cca550] mix-blend-multiply opacity-90 pointer-events-none" />
                   <div className="absolute inset-0 border-[0.05cm] border-gallery-gold opacity-80 pointer-events-none" />
                 </div>
-
+ 
                 {/* Drag Help Overlay */}
                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white/80 border border-white/10 rounded-lg px-3 py-1.5 pointer-events-none z-30 shadow-[0_4px_15px_rgba(0,0,0,0.2)]">
                   <div className="flex items-center gap-1.5 text-[8.5px] font-label-caps uppercase tracking-wider">
@@ -299,7 +320,7 @@ export default function ArtworkDetail() {
                     <span>Drag painting to place</span>
                   </div>
                 </div>
-
+ 
                 {/* Enter Immersive Mode Overlay Button */}
                 <button
                   onClick={() => setIsImmersive(true)}
@@ -309,7 +330,7 @@ export default function ArtworkDetail() {
                   <span className="material-symbols-outlined text-[16px]">open_in_full</span>
                   <span className="font-label-caps text-[9px] uppercase tracking-wider">Immersive Mode</span>
                 </button>
-
+ 
                 {/* Room Selector overlay inside the InSitu container */}
                 <div className="absolute bottom-4 left-4 right-4 flex gap-2 justify-center bg-black/50 backdrop-blur-md p-2 border border-white/10 rounded">
                   {ENVS.map((env, idx) => (

@@ -154,6 +154,21 @@ export default function Manifesto() {
   const [activePillar, setActivePillar] = useState(0);
   const pillar = PILLARS[activePillar];
 
+  const [reviews, setReviews] = useState([
+    {
+      client: "Corporate Client — Verified Partnership",
+      quote: "Partnering with Kala Vault is like having an experienced curator by your side. We help businesses discover, rotate, and showcase artworks that elevate every space.",
+      rating: 5
+    }
+  ]);
+  const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackCompany, setFeedbackCompany] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(5);
+  const [feedbackQuote, setFeedbackQuote] = useState('');
+  const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+
   useEffect(() => { window.scrollTo(0, 0); }, []);
   useEffect(() => {
     const t = setInterval(() => setActivePillar(p => (p + 1) % PILLARS.length), 5500);
@@ -387,6 +402,9 @@ export default function Manifesto() {
         {/* ═══════════════════════════════════════════════════════════
             TRUSTPILOT QUOTE — dark full-bleed
         ═══════════════════════════════════════════════════════════ */}
+        {/* ═══════════════════════════════════════════════════════════
+            TRUSTPILOT QUOTE — dark full-bleed
+        ═══════════════════════════════════════════════════════════ */}
         <section className="relative overflow-hidden" style={{ background: '#0c0c0c' }}>
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none"
@@ -395,18 +413,175 @@ export default function Manifesto() {
           <div className="relative z-10 py-32 md:py-44 px-8 md:px-16 max-w-5xl mx-auto text-center">
             <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}>
               <div className="flex justify-center gap-1.5 mb-8">
-                {Array.from({ length: 5 }).map((_, i) => (
+                {Array.from({ length: reviews[activeReviewIndex]?.rating || 5 }).map((_, i) => (
                   <svg key={i} viewBox="0 0 20 20" fill="#D4AF37" className="w-5 h-5">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 ))}
               </div>
-              <p className="font-label-caps text-[9px] text-gallery-gold uppercase tracking-[0.45em] mb-10">Trustpilot · Verified Review</p>
-              <blockquote className="font-headline-md italic text-2xl md:text-3xl lg:text-[38px] text-paper-white/85 leading-[1.55] font-light max-w-4xl mx-auto mb-10">
-                "Partnering with Kala Vault is like having an experienced curator by your side. We help businesses discover, rotate, and showcase artworks that elevate every space."
-              </blockquote>
-              <div className="h-px w-10 bg-gallery-gold/30 mx-auto mb-6" />
-              <p className="font-label-caps text-[9px] text-paper-white/25 uppercase tracking-[0.35em]">Corporate Client — Verified Partnership</p>
+              <p className="font-label-caps text-[9px] text-gallery-gold uppercase tracking-[0.45em] mb-10">Client Feedback · Verified Review</p>
+              
+              <AnimatePresence mode="wait">
+                {!showFeedbackForm && (
+                  <motion.div
+                    key={activeReviewIndex}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <blockquote className="font-headline-md italic text-2xl md:text-3xl lg:text-[38px] text-paper-white/85 leading-[1.55] font-light max-w-4xl mx-auto mb-10">
+                      "{reviews[activeReviewIndex]?.quote}"
+                    </blockquote>
+                    <div className="h-px w-10 bg-gallery-gold/30 mx-auto mb-6" />
+                    <p className="font-label-caps text-[9px] text-paper-white/25 uppercase tracking-[0.35em]">{reviews[activeReviewIndex]?.client}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Expandable Form on Manifesto (Dark Themed) */}
+              <AnimatePresence>
+                {showFeedbackForm && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="overflow-hidden bg-stone-950/60 border border-gallery-gold/20 p-8 rounded-lg max-w-xl mx-auto mt-8 text-left space-y-4 shadow-2xl backdrop-blur-md"
+                  >
+                    {feedbackSuccess ? (
+                      <motion.div 
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="text-center py-6 space-y-3"
+                      >
+                        <span className="material-symbols-outlined text-4xl text-gallery-gold animate-bounce">check_circle</span>
+                        <h4 className="font-headline-md text-xl text-white font-medium">Thank You!</h4>
+                        <p className="font-body-sm text-[13px] text-white/60 max-w-sm mx-auto leading-relaxed">
+                           Your feedback has been registered and updated on the manifesto showcase.
+                        </p>
+                      </motion.div>
+                    ) : (
+                      <form 
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          if (!feedbackQuote.trim()) return;
+                          const newReview = {
+                            client: `${feedbackName.trim()} · ${feedbackCompany.trim() || "Verified Partner"}`,
+                            quote: feedbackQuote.trim(),
+                            rating: feedbackRating
+                          };
+                          setReviews(prev => [...prev, newReview]);
+                          setActiveReviewIndex(reviews.length); // switch index
+                          setFeedbackSuccess(true);
+                          setFeedbackName('');
+                          setFeedbackCompany('');
+                          setFeedbackQuote('');
+                          setTimeout(() => setShowFeedbackForm(false), 3500);
+                        }}
+                        className="space-y-4"
+                      >
+                        <h4 className="font-headline-md text-lg text-white font-medium tracking-tight mb-2">Submit Your Manifesto Curation Review</h4>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="font-label-caps text-[9px] uppercase tracking-wider text-white/50">Your Name</label>
+                            <input 
+                              type="text" 
+                              value={feedbackName} 
+                              onChange={(e) => setFeedbackName(e.target.value)} 
+                              placeholder="Rahul Sharma" 
+                              className="bg-stone-900 border border-gallery-gold/20 focus:border-gallery-gold focus:outline-none px-3 py-2 text-[13px] text-white rounded-sm transition-all"
+                              required
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="font-label-caps text-[9px] uppercase tracking-wider text-white/50">Role / Company</label>
+                            <input 
+                              type="text" 
+                              value={feedbackCompany} 
+                              onChange={(e) => setFeedbackCompany(e.target.value)} 
+                              placeholder="Director, ITC Hotels" 
+                              className="bg-stone-900 border border-gallery-gold/20 focus:border-gallery-gold focus:outline-none px-3 py-2 text-[13px] text-white rounded-sm transition-all"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="font-label-caps text-[9px] uppercase tracking-wider text-white/50">Curation Experience Rating</label>
+                          <div className="flex items-center gap-1.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <button
+                                key={star}
+                                type="button"
+                                onClick={() => setFeedbackRating(star)}
+                                className="focus:outline-none"
+                              >
+                                <span 
+                                  className={`material-symbols-outlined text-[20px] ${
+                                    star <= feedbackRating ? 'text-gallery-gold fill-1' : 'text-white/20'
+                                  }`}
+                                  style={{ fontVariationSettings: star <= feedbackRating ? "'FILL' 1" : "'FILL' 0" }}
+                                >
+                                  star
+                                </span>
+                              </button>
+                            ))}
+                            <span className="font-mono text-[11px] text-white/30 ml-2">({feedbackRating} / 5)</span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="font-label-caps text-[9px] uppercase tracking-wider text-white/50">Review Message</label>
+                          <textarea 
+                            value={feedbackQuote} 
+                            onChange={(e) => setFeedbackQuote(e.target.value)} 
+                            placeholder="Share your feedback on our art curation and architectural collections..." 
+                            className="bg-stone-900 border border-gallery-gold/20 focus:border-gallery-gold focus:outline-none px-3 py-2 text-[13px] text-white rounded-sm h-20 resize-none transition-all"
+                            required
+                          />
+                        </div>
+
+                        <button 
+                          type="submit" 
+                          className="w-full py-3 bg-gallery-gold border border-gallery-gold text-primary hover:bg-white hover:border-white font-label-caps text-[10px] uppercase tracking-[0.25em] font-semibold transition-all duration-300 focus:outline-none"
+                        >
+                          Submit Review
+                        </button>
+                      </form>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Slider Dots & Toggle Button */}
+              <div className="flex flex-col sm:flex-row justify-between items-center max-w-md mx-auto pt-10 gap-4">
+                <div className="flex gap-2">
+                  {reviews.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setActiveReviewIndex(index)}
+                      className="h-[2px] transition-all duration-500 cursor-pointer"
+                      style={{ 
+                        width: activeReviewIndex === index ? '40px' : '12px', 
+                        background: activeReviewIndex === index ? '#D4AF37' : 'rgba(255,255,255,0.2)' 
+                      }}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={() => {
+                    setShowFeedbackForm(prev => !prev);
+                    setFeedbackSuccess(false);
+                  }}
+                  className="inline-flex items-center gap-1.5 border border-gallery-gold/30 hover:border-gallery-gold/60 text-gallery-gold font-label-caps text-[9px] uppercase tracking-[0.2em] px-4 py-2 hover:bg-gallery-gold hover:text-black transition-all duration-500 rounded-sm"
+                >
+                  <span className="material-symbols-outlined text-[12px]">{showFeedbackForm ? "close" : "rate_review"}</span>
+                  {showFeedbackForm ? "Close Form" : "Share Experience"}
+                </button>
+              </div>
+
             </motion.div>
           </div>
         </section>
