@@ -74,7 +74,7 @@ export default function TopNavBar() {
   return (
     <>
       <nav className={`fixed top-0 w-full z-50 px-4 md:px-8 transition-all duration-500 ${isScrolled ? 'bg-paper-white/95 backdrop-blur-md py-4 border-b border-gallery-gold/20 shadow-sm' : (isHeroDark ? 'bg-black/10 backdrop-blur-sm py-6 border-b border-transparent' : 'bg-paper-white/50 backdrop-blur-[10px] py-6 border-b border-transparent')}`}>
-        <div className="grid grid-cols-3 items-center w-full">
+        <div className="flex md:grid md:grid-cols-3 items-center justify-between w-full">
           {/* Left Links */}
           <div className="hidden md:flex gap-8 items-center justify-start">
             {navLinks.slice(0, 2).map((link) => (
@@ -93,40 +93,44 @@ export default function TopNavBar() {
           </div>
 
           {/* Center Logo */}
-          <div className="flex justify-center text-center">
+          <div className="flex justify-start md:justify-center text-center">
             <Link to="/" className="flex items-center justify-center transition-transform duration-300 hover:scale-[1.02]">
-              <KalaVaultLogo variant="alternate" theme={isHeroDark ? 'white' : 'gold'} />
+              <KalaVaultLogo 
+                variant="alternate" 
+                theme={isHeroDark ? 'white' : 'gold'} 
+                className="scale-90 md:scale-100 origin-left md:origin-center"
+              />
             </Link>
           </div>
 
-          {/* Right Links & Button */}
-          <div className="hidden md:flex gap-8 items-center justify-end">
-             {navLinks.slice(2).map((link) => (
-              <Link 
-                key={link.path}
-                className={`font-label-caps text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors duration-300 ${
-                  isActive(link.path) 
-                    ? 'text-gallery-gold border-b border-gallery-gold pb-0.5' 
-                    : linkColorClass
-                }`} 
-                to={link.path}
-              >
-                {link.name}
+          {/* Right Links & Button / Mobile Menu Button */}
+          <div className="flex items-center justify-end">
+            <div className="hidden md:flex gap-8 items-center justify-end">
+               {navLinks.slice(2).map((link) => (
+                <Link 
+                  key={link.path}
+                  className={`font-label-caps text-[11px] font-semibold tracking-[0.15em] uppercase transition-colors duration-300 ${
+                    isActive(link.path) 
+                      ? 'text-gallery-gold border-b border-gallery-gold pb-0.5' 
+                      : linkColorClass
+                  }`} 
+                  to={link.path}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <Link to="/signin" className="font-label-caps text-[10px] font-bold uppercase tracking-[0.2em] text-paper-white bg-gallery-gold px-6 py-2.5 hover:bg-primary hover:text-paper-white transition-all duration-500 whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+                SIGN IN
               </Link>
-            ))}
-            <Link to="/signin" className="font-label-caps text-[10px] font-bold uppercase tracking-[0.2em] text-paper-white bg-gallery-gold px-6 py-2.5 hover:bg-primary hover:text-paper-white transition-all duration-500 whitespace-nowrap shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-              SIGN IN
-            </Link>
-          </div>
-          
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden justify-end col-start-3">
-             <button 
-                onClick={() => setIsMenuOpen(true)}
-                className={`material-symbols-outlined ${isHeroDark ? 'text-white drop-shadow-md' : 'text-primary'}`}
-             >
-                 menu
-             </button>
+            </div>
+            
+            {/* Mobile Menu Button */}
+            <button 
+              onClick={() => setIsMenuOpen(true)}
+              className={`material-symbols-outlined md:hidden scale-110 ${isHeroDark ? 'text-white drop-shadow-md' : 'text-primary'}`}
+            >
+              menu
+            </button>
           </div>
         </div>
       </nav>
