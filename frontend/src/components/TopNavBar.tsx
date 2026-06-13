@@ -73,7 +73,7 @@ export default function TopNavBar() {
 
   return (
     <>
-      <nav className={`fixed top-0 w-full z-50 px-4 md:px-8 transition-all duration-500 ${isScrolled ? 'bg-paper-white/95 backdrop-blur-md py-4 border-b border-gallery-gold/20 shadow-sm' : (isHeroDark ? 'bg-black/10 backdrop-blur-sm py-6 border-b border-transparent' : 'bg-paper-white/50 backdrop-blur-[10px] py-6 border-b border-transparent')}`}>
+      <nav className={`fixed top-0 w-full z-50 px-4 md:px-8 transition-all duration-500 ${isScrolled ? 'bg-paper-white/95 backdrop-blur-md py-4 border-b border-transparent shadow-sm' : (isHeroDark ? 'bg-black/10 backdrop-blur-sm py-6 border-b border-transparent' : 'bg-paper-white/50 backdrop-blur-[10px] py-6 border-b border-transparent')}`}>
         <div className="flex md:grid md:grid-cols-3 items-center justify-between w-full">
           {/* Left Links */}
           <div className="hidden md:flex gap-8 items-center justify-start">
@@ -125,12 +125,14 @@ export default function TopNavBar() {
             </div>
             
             {/* Mobile Menu Button */}
-            <button 
-              onClick={() => setIsMenuOpen(true)}
-              className={`material-symbols-outlined md:hidden scale-110 ${isHeroDark ? 'text-white drop-shadow-md' : 'text-primary'}`}
-            >
-              menu
-            </button>
+            <div className="md:hidden">
+              <button 
+                onClick={() => setIsMenuOpen(true)}
+                className={`material-symbols-outlined scale-110 ${isHeroDark ? 'text-white drop-shadow-md' : 'text-primary'}`}
+              >
+                menu
+              </button>
+            </div>
           </div>
         </div>
       </nav>

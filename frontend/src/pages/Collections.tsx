@@ -31,26 +31,6 @@ export default function Collections() {
     return () => clearTimeout(timer);
   }, [activeTab]);
 
-  // Preload all watermarked images in the background on mount
-  useEffect(() => {
-    const preloadAllImages = async () => {
-      for (const art of ALL_ARTWORKS) {
-        try {
-          const fakeArtwork = {
-            id: art.id,
-            title: art.name,
-            localImagePath: art.localPath,
-          };
-          // Call watermarking service to draw on canvas and cache
-          getArtworkImageWithWatermark(fakeArtwork);
-        } catch (err) {
-          console.warn(`Background preload failed for ${art.name}:`, err);
-        }
-      }
-    };
-    preloadAllImages();
-  }, []);
-
   // Memoize artworks to prevent unnecessary re-renders
   const displayedArtworks = useMemo(() => artworks, [artworks]);
 
@@ -273,33 +253,31 @@ export default function Collections() {
         </motion.div>
 
         {/* Artworks Grid */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="columns-1 sm:columns-2 lg:columns-3 gap-6 md:gap-8"
-        >
-          {loading && (
-            <div className="w-full col-span-full flex items-center justify-center py-24">
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-12 h-12 border-3 border-gallery-gold/30 border-t-gallery-gold rounded-full animate-spin" />
-                <p className="font-body-md text-on-surface-variant">
-                  Loading {activeTab === 'all' ? 'all artworks' : 'collection'}...
-                </p>
-              </div>
+        {loading ? (
+          <div className="w-full flex items-center justify-center py-24">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-3 border-gallery-gold/30 border-t-gallery-gold rounded-full animate-spin" />
+              <p className="font-body-md text-on-surface-variant">
+                Loading {activeTab === 'all' ? 'all artworks' : 'collection'}...
+              </p>
             </div>
-          )}
-
-          {!loading && displayedArtworks.length === 0 && (
-            <div className="w-full col-span-full flex items-center justify-center py-24">
-              <p className="font-body-md text-on-surface-variant">No artworks found in this collection</p>
-            </div>
-          )}
-
-          {!loading && displayedArtworks.map((art, idx) => (
-            <ArtworkCard key={art.id} artwork={art} index={idx} />
-          ))}
-        </motion.div>
+          </div>
+        ) : displayedArtworks.length === 0 ? (
+          <div className="w-full flex items-center justify-center py-24">
+            <p className="font-body-md text-on-surface-variant">No artworks found in this collection</p>
+          </div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="columns-1 sm:columns-2 lg:columns-3 gap-6 md:gap-8"
+          >
+            {displayedArtworks.map((art, idx) => (
+              <ArtworkCard key={art.id} artwork={art} index={idx} />
+            ))}
+          </motion.div>
+        )}
       </main>
 
       <Footer />

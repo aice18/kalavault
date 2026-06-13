@@ -34,10 +34,10 @@ export default function KalaVaultLogo({
   const isWhiteTheme = theme === 'white';
   const isDarkTheme = theme === 'dark';
 
-  // Typography coloring
-  const textTitleColor = isWhiteTheme ? 'text-white' : isDarkTheme ? 'text-primary' : 'text-gallery-gold';
+  // Typography coloring - Always gold
+  const textTitleColor = 'text-gallery-gold';
 
-  // Render the high-resolution generated image masked in an arch shape, with no borders or shadows
+  // Render the processed transparent image masked in an arch shape, with no borders or shadows
   const renderSymbol = (size = 80) => {
     const height = size * 1.8;
     return (
@@ -47,7 +47,7 @@ export default function KalaVaultLogo({
           width: `${size}px`,
           height: `${height}px`,
           borderRadius: `${size / 2}px ${size / 2}px 0px 0px`, // Perfect arch masking to crop out background
-          border: '1.2px solid rgba(212, 175, 55, 0.45)', // Thin gold border outlining the actual arch logo
+          // Removed all border and shadow lines
         }}
       >
         <img
