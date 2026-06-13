@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import KalaVaultLogo from './KalaVaultLogo';
 
 export default function Footer() {
   return (
@@ -11,14 +12,14 @@ export default function Footer() {
           
           {/* Left Column: Brand Signature & Contact details (5-Columns) */}
           <div className="lg:col-span-5 space-y-8">
-            <div className="space-y-4">
+            <div className="space-y-4 flex flex-col items-center lg:items-start">
               <Link 
                 to="/" 
-                className="font-display-lg text-3xl md:text-4xl text-primary tracking-[0.15em] uppercase block hover:text-gallery-gold transition-colors duration-300"
+                className="hover:opacity-90 transition-opacity duration-300 block"
               >
-                THE KALA VAULT
+                <KalaVaultLogo variant="alternate" theme="dark" />
               </Link>
-              <p className="font-body-md text-on-surface-variant leading-relaxed text-sm max-w-sm">
+              <p className="font-body-md text-on-surface-variant leading-relaxed text-sm max-w-sm mt-4 text-center lg:text-left">
                 Elevating corporate flagships and private residences through museum-grade art leasing, rotation, and bespoke curation.
               </p>
             </div>

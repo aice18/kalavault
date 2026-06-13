@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import KalaVaultLogo from './KalaVaultLogo';
 
 const navLinks = [
   { name: 'Collections', path: '/collections' },
@@ -66,7 +67,7 @@ export default function TopNavBar() {
 
   const isActive = (path: string) => location.pathname === path;
   
-  const isHeroDark = !isScrolled && (location.pathname === '/' || location.pathname === '/manifesto');
+  const isHeroDark = !isScrolled && location.pathname === '/';
   
   const linkColorClass = isHeroDark ? 'text-white hover:text-gallery-gold drop-shadow-sm' : 'text-primary hover:text-gallery-gold drop-shadow-sm';
 
@@ -93,8 +94,8 @@ export default function TopNavBar() {
 
           {/* Center Logo */}
           <div className="flex justify-center text-center">
-            <Link to="/" className="text-[20px] md:text-[28px] font-display-lg text-gallery-gold uppercase tracking-[0.15em] font-bold leading-none whitespace-nowrap">
-              THE KALA VAULT
+            <Link to="/" className="flex items-center justify-center transition-transform duration-300 hover:scale-[1.02]">
+              <KalaVaultLogo variant="alternate" theme={isHeroDark ? 'white' : 'gold'} />
             </Link>
           </div>
 
@@ -142,7 +143,9 @@ export default function TopNavBar() {
           >
             {/* Mobile Menu Header */}
             <div className="flex justify-between items-center mb-16">
-               <span className="text-[20px] font-display-lg text-gallery-gold uppercase tracking-[0.15em] font-bold leading-none">THE KALA VAULT</span>
+               <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex items-center">
+                  <KalaVaultLogo variant="alternate" theme="gold" />
+               </Link>
                <button 
                   onClick={() => setIsMenuOpen(false)}
                   className="material-symbols-outlined text-primary scale-110 hover:rotate-90 transition-transform duration-500"
