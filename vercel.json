@@ -1,22 +1,10 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "new-frontend/package.json",
-      "use": "@vercel/next",
-      "config": {
-        "zeroConfig": true
-      }
-    }
-  ],
+  "cleanUrls": true,
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "new-frontend/$1"
+      "dest": "/$1"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- new-frontend backend docker-compose.yml"
+  ]
 }
