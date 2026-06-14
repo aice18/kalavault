@@ -107,12 +107,6 @@ export default function SignIn() {
             </div>
             
             <div className="text-center pt-6 flex flex-col items-center gap-4">
-                <div className="bg-subtle-smoke border border-gallery-gold/20 p-4 w-full text-left text-sm font-body-sm text-on-surface-variant">
-                    <p className="font-label-caps text-[10px] uppercase text-gallery-gold mb-2">Test Credentials</p>
-                    <p><strong>Admin:</strong> admin@kalavault.com</p>
-                    <p><strong>Customer:</strong> user@kalavault.com</p>
-                    <p className="italic mt-1 text-xs text-primary/60">Any password will work. "admin" in email routes to admin console.</p>
-                </div>
                 <p className="font-body-md text-sm text-primary/70 mt-2">
                     Not a member yet?
                 </p>
